@@ -1,0 +1,78 @@
+/* Ayni Design System — Animations
+ * Motion tokens and scroll-reveal utilities.
+ * All animations use transform + opacity only (GPU-composited).
+ */
+
+:root {
+  /* The hero scroll easing — a 49-point linear() curve sampled from
+   * easeInOutCustom() in src/lib/scrollDriver.ts (max deviation
+   * ~0.9px across the full slide). Shared by every scroll-driven
+   * keyframe animation (panels, hero panel, navbar clip, parallax) so
+   * they all track the same progress. Used only inside
+   * @supports (animation-timeline: scroll()); the JS driver applies the
+   * exact function on the fallback path. */
+  --ease-hero: linear(0, 0.00241 2.0833%, 0.00965 4.1667%, 0.0217 6.25%, 0.03858 8.3333%, 0.06028 10.4167%, 0.08681 12.5%, 0.11815 14.5833%, 0.15432 16.6667%, 0.19531 18.75%, 0.24113 20.8333%, 0.29176 22.9167%, 0.34722 25%, 0.4075 27.0833%, 0.47261 29.1667%, 0.5 30%, 0.5177 31.25%, 0.54649 33.3333%, 0.57439 35.4167%, 0.6014 37.5%, 0.62753 39.5833%, 0.65278 41.6667%, 0.67714 43.75%, 0.70061 45.8333%, 0.7232 47.9167%, 0.7449 50%, 0.76571 52.0833%, 0.78564 54.1667%, 0.80469 56.25%, 0.82285 58.3333%, 0.84012 60.4167%, 0.85651 62.5%, 0.87201 64.5833%, 0.88662 66.6667%, 0.90035 68.75%, 0.91319 70.8333%, 0.92515 72.9167%, 0.93622 75%, 0.94641 77.0833%, 0.95571 79.1667%, 0.96413 81.25%, 0.97166 83.3333%, 0.9783 85.4167%, 0.98406 87.5%, 0.98893 89.5833%, 0.99291 91.6667%, 0.99601 93.75%, 0.99823 95.8333%, 0.99956 97.9167%, 1 100%);
+}
+
+/* Reduced motion — respect user preference.
+ * Exception: the hero's scroll-driven animations re-assert
+ * `animation-duration: auto` in their own components — a zero duration
+ * would snap a scroll-linked animation to its end state, and the
+ * scroll-mapped slide is user-driven motion (kept on both the CSS and
+ * the JS fallback path). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+  }
+}
+
+/* Reveal animation — used by IntersectionObserver action */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(1.5rem);
+  transition:
+    opacity var(--duration-reveal) var(--ease),
+    transform var(--duration-reveal) var(--ease);
+}
+
+[data-reveal].revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Stagger children — for grids */
+[data-stagger] > * {
+  opacity: 0;
+  transform: translateY(1.5rem);
+  transition:
+    opacity var(--duration-normal) var(--ease),
+    transform var(--duration-normal) var(--ease);
+}
+
+[data-stagger].revealed > * {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Stagger delay for each child */
+[data-stagger].revealed > *:nth-child(1) { transition-delay: 0ms; }
+[data-stagger].revealed > *:nth-child(2) { transition-delay: 80ms; }
+[data-stagger].revealed > *:nth-child(3) { transition-delay: 160ms; }
+[data-stagger].revealed > *:nth-child(4) { transition-delay: 240ms; }
+[data-stagger].revealed > *:nth-child(5) { transition-delay: 320ms; }
+[data-stagger].revealed > *:nth-child(6) { transition-delay: 400ms; }
+[data-stagger].revealed > *:nth-child(7) { transition-delay: 480ms; }
+
+/* Hover lift — for cards and interactive elements */
+.hover-lift {
+  transition: transform var(--duration-normal) var(--ease),
+              border-color var(--duration-normal) var(--ease);
+}
+.hover-lift:hover {
+  transform: translateY(-2px);
+}

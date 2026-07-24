@@ -1,0 +1,48 @@
+/* Ayni Design System — Custom Fonts
+ * @font-face declarations for self-hosted fonts.
+ * Loaded after base tokens, before typography classes.
+ * 
+ * Fonts:
+ * - Shippori Antique: Display/heading font (serif, elegant)
+ * - The Seasons: Alternative display font (serif, refined)
+ * - Inter: Body/UI font (sans-serif, clean)
+ */
+
+/* ═══════════════════════════════════════════
+   SHIPPORI ANTIQUE
+   Primary display font
+   ═══════════════════════════════════════════ */
+
+@font-face {
+  font-family: 'Shippori Antique';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/shippori-antique/shippori-antique-v11-latin-regular.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* ═══════════════════════════════════════════
+   THE SEASONS
+   Alternative display font
+   Note: TTF format — convert to woff2 for production
+   ═══════════════════════════════════════════ */
+
+@font-face {
+  font-family: 'The Seasons';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/the-seasons/the-seasons-regular/the-seasons-regular.ttf') format('truetype');
+}
+
+/* ═══════════════════════════════════════════
+   FONT SWAPPING GUIDE
+   
+   To change the display font, edit --font-display in tokens.css:
+   --font-display: "Shippori Antique", Georgia, serif;  (default)
+   --font-display: "The Seasons", Georgia, serif;       (alternative)
+   
+   Body font is Inter (system/ui sans-serif).
+   To change body font, update --font-text in tokens.css.
+   ═══════════════════════════════════════════ */

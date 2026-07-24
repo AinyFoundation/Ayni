@@ -1,0 +1,162 @@
+/* Ayni Design System — Tokens
+ * Three-tier: Primitives → Semantic → Components
+ * Plain CSS custom properties — no framework.
+ */
+
+:root {
+  /* ═══════════════════════════════════════════
+     PRIMITIVES: Colors
+     ═══════════════════════════════════════════ */
+
+  /* Paper — only two */
+  --color-paper: #F1E7D4;
+  --color-paper-2: #EADBC0;
+
+  /* Ink — only two */
+  --color-ink: #221c14;
+  --color-ink-2: #422E21;
+
+  /* Hairlines */
+  --color-line: #e3dccc;
+  --color-line-2: #cfc6b4;
+
+  /* Spectrum: 7 wings, 7 earthy hues */
+  --color-clay: #C36A54;
+  --color-amber: #CF8A43;
+  --color-gold: #D4A739;
+  --color-sage: #6F9D5B;
+  --color-slate: #4D85B8;
+  --color-indigo: #6B6DBB;
+  --color-plum: #A45796;
+
+  /* Wing tints — for surfaces */
+  --color-clay-t: #EAD4C1;
+  --color-amber-t: #ECD9BD;
+  --color-gold-t: #EDDCBB;
+  --color-sage-t: #DEDCC2;
+  --color-slate-t: #D8D8D0;
+  --color-indigo-t: #DCD3D2;
+  --color-plum-t: #E4D0CA;
+
+  /* ═══════════════════════════════════════════
+     PRIMITIVES: Spacing (4px base, 8 stops)
+     ═══════════════════════════════════════════ */
+
+  --spacing-s-1: 4px;
+  --spacing-s-2: 8px;
+  --spacing-s-3: 12px;
+  --spacing-s-4: 16px;
+  --spacing-s-5: 24px;
+  --spacing-s-6: 32px;
+  --spacing-s-7: 48px;
+  --spacing-s-8: 80px;
+
+  /* ═══════════════════════════════════════════
+     PRIMITIVES: Typography
+     ═══════════════════════════════════════════ */
+
+  /* Font families — change these to swap fonts site-wide
+   * Display options: 'Shippori Antique', 'The Seasons', Georgia
+   * Text options: 'Inter', system-ui, sans-serif
+   */
+  --font-display: "Shippori Antique", Georgia, serif;
+  --font-text: "Inter", system-ui, sans-serif;
+  --font-mono: "Inter", monospace;
+
+  /* Type scale */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-body: 1rem;
+  --text-lead: 1.25rem;
+  --text-h4: 1.5rem;
+  --text-h3: 2rem;
+  --text-h2: 2.75rem;
+  --text-h1: 4rem;
+  --text-display: 5.5rem;
+
+  /* Font weights */
+  --weight-light: 300;
+  --weight-book: 400;
+  --weight-med: 500;
+  --weight-semi: 600;
+
+  /* Line heights */
+  --leading-tight: 1.1;
+  --leading-snug: 1.3;
+  --leading-norm: 1.6;
+  --leading-loose: 1.8;
+
+  /* Letter spacing */
+  --tracking-display: 0.01em;
+  --tracking-norm: 0;
+  --tracking-wide: 0.04em;
+  --tracking-wider: 0.12em;
+
+  /* ═══════════════════════════════════════════
+     PRIMITIVES: Radius
+     ═══════════════════════════════════════════ */
+
+  --radius: 8px;
+  --radius-full: 9999px;
+
+  /* ═══════════════════════════════════════════
+     PRIMITIVES: Motion
+     ═══════════════════════════════════════════ */
+
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-quick: 180ms;
+  --duration-normal: 400ms;
+  --duration-slow: 800ms;
+  --duration-reveal: 1200ms;
+}
+
+/* ═══════════════════════════════════════════════════
+   SEMANTIC LAYER
+   Components use these — never raw primitives.
+   ═══════════════════════════════════════════════════ */
+
+:root {
+  /* Surfaces — the two papers, named by role */
+  --surface-1: var(--color-paper);
+  --surface-2: var(--color-paper-2);
+
+  /* Text */
+  --text: var(--color-ink);
+  --text-2: var(--color-ink-2);
+  --text-3: var(--color-ink-2);
+
+  /* Borders — three tiers */
+  --border-subtle: var(--color-line);
+  --border-strong: var(--color-line-2);
+  --border-focus: var(--color-ink);
+
+  /* Container inversion — cards invert from parent surface */
+  --card-bg-on-1: var(--surface-2);
+  --card-bg-on-2: var(--surface-1);
+
+  /* Hover / active backgrounds */
+  --hover-bg-on-1: var(--surface-2);
+  --hover-bg-on-2: var(--surface-1);
+  --active-bg: var(--border-strong);
+
+  /* Focus ring — ink, institutional */
+  --ring-focus: var(--color-ink);
+
+  /* Wing colors — semantic aliases for direct use */
+  --clay: var(--color-clay);
+  --amber: var(--color-amber);
+  --gold: var(--color-gold);
+  --sage: var(--color-sage);
+  --slate: var(--color-slate);
+  --indigo: var(--color-indigo);
+  --plum: var(--color-plum);
+
+  /* Wing tints — semantic aliases */
+  --clay-t: var(--color-clay-t);
+  --amber-t: var(--color-amber-t);
+  --gold-t: var(--color-gold-t);
+  --sage-t: var(--color-sage-t);
+  --slate-t: var(--color-slate-t);
+  --indigo-t: var(--color-indigo-t);
+  --plum-t: var(--color-plum-t);
+}

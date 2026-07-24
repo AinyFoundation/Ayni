@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ayni · Design System</title>
+  <!-- Local fonts (self-hosted, no external requests) -->
+  <style>
+    @font-face {
+      font-family: 'Shippori Antique';
+      font-style: normal;
+      font-weight: 400;
+      font-display: swap;
+      src: url('../../static/fonts/shippori-antique/shippori-antique-v11-latin-regular.woff2') format('woff2');
+    }
+    @font-face {
+      font-family: 'The Seasons';
+      font-style: normal;
+      font-weight: 400;
+      font-display: swap;
+      src: url('../../static/fonts/the-seasons/the-seasons-regular/the-seasons-regular.ttf') format('truetype');
+    }
+  </style>
+  <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+  <link rel="stylesheet" href="tokens.css">
+  <link rel="stylesheet" href="base.css">
+</head>
+<body class="blueprint-on">
+  <div class="page">
+
+    <!-- ─── Nav ─── -->
+    <nav class="nav">
+      <div class="logo-mark">
+        <img src="assets/ayni-logo.png" alt="Ayni" class="logo-img">
+        <span class="logo-text">Ayni</span>
+      </div>
+      <div class="nav-links">
+        <a href="design-system.html">Design System</a>
+        <a href="components.html">Components</a>
+        <span class="nav-divider" aria-hidden="true"></span>
+        <a href="#color">Color</a>
+        <a href="#cards">Cards</a>
+        <a href="#icons">Icons</a>
+        <a href="#type">Typography</a>
+        <a href="#space">Space</a>
+        <a href="#separators">Separators</a>
+        <a href="#components">Components</a>
+      </div>
+    </nav>
+
+    <!-- ─── Hero ─── -->
+    <section class="section" style="padding-top: 0; padding-bottom: var(--s-8);">
+      <p class="small" style="margin-bottom: var(--s-4); letter-spacing: var(--ls-wide); text-transform: uppercase; color: var(--ink-2);">A design system · v0.3 · revised July 2026</p>
+      <h1 class="h-display">Ayni Sanctuary</h1>
+      <p class="lead" style="max-width: 42ch; margin-top: var(--s-5);">
+        Seven wings, one ecosystem, rooted in Calca. Paper, ink, and seven earthy hues. Nothing decorative.
+      </p>
+    </section>
+
+    <!-- ─── Color ─── -->
+    <section class="section" id="color">
+      <div class="eyebrow">Color</div>
+      <h2 class="h-2" style="margin-bottom: var(--s-4);">Two surfaces, two inks, seven hues</h2>
+      <p class="body" style="max-width: 54ch; margin-bottom: var(--s-7);">
+        The page is paper. Text is ink. Everything else is accent, and accents are rare. Seven hues because there are seven wings, and seven wings because there are seven chakras: the energy centers this ecosystem is built around. Each hue is earthy enough to sit beside the next without competing.
+      </p>
+
+      <div class="eyebrow" style="margin-bottom: var(--s-3);">Paper & Ink</div>
+      <div class="swatch-row" style="margin-bottom: var(--s-7);">
+        <div>
+          <div class="swatch swatch-light" style="background: var(--paper); border: 1px solid var(--line);">Paper</div>
+          <div class="swatch-info"><div class="swatch-name">Base surface</div><div class="swatch-hex">#fbf9f5</div></div>
+        </div>
+        <div>
+          <div class="swatch swatch-light" style="background: var(--paper-2);">Paper 2</div>
+          <div class="swatch-info"><div class="swatch-name">Elevated</div><div class="swatch-hex">#f3eee5</div></div>
+        </div>
+        <div>
+          <div class="swatch" style="background: var(--ink);">Ink</div>
+          <div class="swatch-info"><div class="swatch-name">Primary text</div><div class="swatch-hex">#221c14</div></div>
+        </div>
+        <div>
+          <div class="swatch" style="background: var(--ink-2);">Ink 2</div>
+          <div class="swatch-info"><div class="swatch-name">Muted text</div><div class="swatch-hex">#6b5f4d</div></div>
+        </div>
+      </div>
+
+      <div class="eyebrow" style="margin-bottom: var(--s-3);">Spectrum · Seven Wings</div>
+      <div class="swatch-row">
+        <div>
+          <div class="swatch" style="background: var(--clay);">Clay</div>
+          <div class="swatch-info"><div class="swatch-name">Sanctuary</div><div class="swatch-hex">#C36A54</div></div>
+        </div>
+        <div>
+          <div class="swatch" style="background: var(--amber);">Amber</div>
+          <div class="swatch-info"><div class="swatch-name">Energy</div><div class="swatch-hex">#CF8A43</div></div>
+        </div>
+        <div>
+          <div class="swatch swatch-light" style="background: var(--gold);">Gold</div>
+          <div class="swatch-info"><div class="swatch-name">Art</div><div class="swatch-hex">#D4A739</div></div>
+        </div>
+        <div>
+          <div class="swatch" style="background: var(--sage);">Sage</div>
+          <div class="swatch-info"><div class="swatch-name">Wellness</div><div class="swatch-hex">#6F9D5B</div></div>
+        </div>
+        <div>
+          <div class="swatch" style="background: var(--slate);">Slate</div>
+          <div class="swatch-info"><div class="swatch-name">Learning</div><div class="swatch-hex">#4d85b8</div></div>
+        </div>
+        <div>
+          <div class="swatch" style="background: var(--indigo);">Indigo</div>
+          <div class="swatch-info"><div class="swatch-name">Labs</div><div class="swatch-hex">#6B6DBB</div></div>
+        </div>
+        <div>
+          <div class="swatch" style="background: var(--plum);">Plum</div>
+          <div class="swatch-info"><div class="swatch-name">Games</div><div class="swatch-hex">#A45796</div></div>
+        </div>
+      </div>
+
+      <div class="eyebrow" style="margin-top: var(--s-7); margin-bottom: var(--s-3);">Wing Tints · For surfaces</div>
+      <div class="swatch-row">
+        <div class="swatch swatch-light" style="background: var(--clay-t); width: 88px; height: 56px;">Clay</div>
+        <div class="swatch swatch-light" style="background: var(--amber-t); width: 88px; height: 56px;">Amber</div>
+        <div class="swatch swatch-light" style="background: var(--gold-t); width: 88px; height: 56px;">Gold</div>
+        <div class="swatch swatch-light" style="background: var(--sage-t); width: 88px; height: 56px;">Sage</div>
+        <div class="swatch swatch-light" style="background: var(--slate-t); width: 88px; height: 56px;">Slate</div>
+        <div class="swatch swatch-light" style="background: var(--indigo-t); width: 88px; height: 56px;">Indigo</div>
+        <div class="swatch swatch-light" style="background: var(--plum-t); width: 88px; height: 56px;">Plum</div>
+      </div>
+    </section>
+
+    <!-- ─── Icons ─── -->
+    <section class="section" id="cards">
+      <div class="eyebrow">Cards</div>
+      <h2 class="h-2" style="margin-bottom: var(--s-4);">Accent gradient</h2>
+      <p class="small" style="margin-bottom: var(--s-4); max-width: 54ch;">One gradient per wing. Hue to ink. Reserve for moments that need weight.</p>
+      <div class="grid-3" style="margin-bottom: var(--s-7);">
+        <div class="card card-accent" style="--accent-hue: var(--clay); --accent-tint: var(--clay-t);">
+          <div class="card-title">Sanctuary</div>
+          <p class="card-body">Clay to ink. Warmth, weight, place.</p>
+        </div>
+        <div class="card card-accent" style="--accent-hue: var(--sage); --accent-tint: var(--sage-t);">
+          <div class="card-title">Wellness</div>
+          <p class="card-body">Sage to ink. Healing, depth, breath.</p>
+        </div>
+        <div class="card card-accent" style="--accent-hue: var(--indigo); --accent-tint: var(--indigo-t);">
+          <div class="card-title">Labs</div>
+          <p class="card-body">Indigo to ink. Technology, infrastructure, backbone.</p>
+        </div>
+      </div>
+
+      <div class="eyebrow" style="margin-top: var(--s-8); margin-bottom: var(--s-3);">Pattern · Card in use</div>
+      <p class="small" style="margin-bottom: var(--s-4); max-width: 54ch;">A wing accent card with full content. Tag, title, body, actions.</p>
+      <div class="grid-2">
+        <div class="card card-accent" style="--accent-hue: var(--clay); --accent-tint: var(--clay-t); position: relative;">
+          <span class="tag" style="position: absolute; top: var(--s-4); left: var(--s-4);"><iconify-icon icon="eva:home-fill" style="color: var(--clay);"></iconify-icon>Sanctuary</span>
+          <div class="card-title" style="font-size: var(--t-h3); margin-bottom: var(--s-3); margin-top: var(--s-7);">Living laboratory</div>
+          <p class="body" style="margin-bottom: var(--s-5); color: var(--paper); opacity: 0.9; max-width: 60ch;">The physical retreat center. Bungalows, ceremonies, restaurant. The for-profit arm that funds the mission.</p>
+          <div class="row gap-3">
+            <button class="btn btn-primary btn-sm">Explore</button>
+            <button class="btn btn-ghost btn-sm" style="color: var(--paper);">Learn more</button>
+          </div>
+        </div>
+        <div class="card card-accent" style="--accent-hue: var(--indigo); --accent-tint: var(--indigo-t); position: relative;">
+          <span class="tag" style="position: absolute; top: var(--s-4); left: var(--s-4);"><iconify-icon icon="eva:bulb-fill" style="color: var(--indigo);"></iconify-icon>Labs</span>
+          <div class="card-title" style="font-size: var(--t-h3); margin-bottom: var(--s-3); margin-top: var(--s-7);">Technology backbone</div>
+          <p class="body" style="margin-bottom: var(--s-5); color: var(--paper); opacity: 0.9; max-width: 60ch;">Blockchain, AI, robotics, engineering. The infrastructure that powers every other wing.</p>
+          <div class="row gap-3">
+            <button class="btn btn-primary btn-sm">Explore</button>
+            <button class="btn btn-ghost btn-sm" style="color: var(--paper);">Learn more</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── Icons ─── -->
+    <section class="section" id="icons">
+      <div class="eyebrow">Icons</div>
+      <h2 class="h-2" style="margin-bottom: var(--s-4);">Eva Icons, fill</h2>
+      <p class="body" style="max-width: 54ch; margin-bottom: var(--s-5);">
+        One set. One style: solid, warm, friendly. MIT licensed. Icons inherit text color and size, so they adapt to any context without special handling.
+      </p>
+      <p class="small" style="margin-bottom: var(--s-7);">
+        Usage in code: <code class="mono">&lt;iconify-icon icon="eva:home-fill"&gt;&lt;/iconify-icon&gt;</code>
+      </p>
+
+      <div class="eyebrow" style="margin-bottom: var(--s-3);">Interface · Navigation & status</div>
+      <div class="icon-grid" style="margin-bottom: var(--s-7);">
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:home-fill"></iconify-icon></span><span class="icon-name">home</span></div>
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:menu-fill"></iconify-icon></span><span class="icon-name">menu</span></div>
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:arrow-back-fill"></iconify-icon></span><span class="icon-name">back</span></div>
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:arrow-forward-fill"></iconify-icon></span><span class="icon-name">forward</span></div>
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:chevron-down-fill"></iconify-icon></span><span class="icon-name">expand</span></div>
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:checkmark-circle-fill"></iconify-icon></span><span class="icon-name">success</span></div>
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:close-circle-fill"></iconify-icon></span><span class="icon-name">error</span></div>
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:info-fill"></iconify-icon></span><span class="icon-name">info</span></div>
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:alert-triangle-fill"></iconify-icon></span><span class="icon-name">warning</span></div>
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:search-fill"></iconify-icon></span><span class="icon-name">search</span></div>
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:options-2-fill"></iconify-icon></span><span class="icon-name">settings</span></div>
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:more-horizontal-fill"></iconify-icon></span><span class="icon-name">more</span></div>
+      </div>
+
+      <div class="eyebrow" style="margin-bottom: var(--s-3);">Interface · Actions</div>
+      <div class="icon-grid" style="margin-bottom: var(--s-7);">
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:edit-fill"></iconify-icon></span><span class="icon-name">edit</span></div>
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:trash-2-fill"></iconify-icon></span><span class="icon-name">delete</span></div>
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:copy-fill"></iconify-icon></span><span class="icon-name">copy</span></div>
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:share-fill"></iconify-icon></span><span class="icon-name">share</span></div>
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:download-fill"></iconify-icon></span><span class="icon-name">download</span></div>
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:plus-fill"></iconify-icon></span><span class="icon-name">add</span></div>
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:minus-fill"></iconify-icon></span><span class="icon-name">remove</span></div>
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:eye-fill"></iconify-icon></span><span class="icon-name">view</span></div>
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:bookmark-fill"></iconify-icon></span><span class="icon-name">save</span></div>
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:link-2-fill"></iconify-icon></span><span class="icon-name">link</span></div>
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:external-link-fill"></iconify-icon></span><span class="icon-name">external</span></div>
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:log-out-fill"></iconify-icon></span><span class="icon-name">logout</span></div>
+      </div>
+
+      <div class="eyebrow" style="margin-bottom: var(--s-3);">Interface · People & communication</div>
+      <div class="icon-grid" style="margin-bottom: var(--s-7);">
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:person-fill"></iconify-icon></span><span class="icon-name">person</span></div>
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:people-fill"></iconify-icon></span><span class="icon-name">people</span></div>
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:person-add-fill"></iconify-icon></span><span class="icon-name">invite</span></div>
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:email-fill"></iconify-icon></span><span class="icon-name">email</span></div>
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:phone-fill"></iconify-icon></span><span class="icon-name">phone</span></div>
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:message-circle-fill"></iconify-icon></span><span class="icon-name">message</span></div>
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:bell-fill"></iconify-icon></span><span class="icon-name">notify</span></div>
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:calendar-fill"></iconify-icon></span><span class="icon-name">date</span></div>
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:clock-fill"></iconify-icon></span><span class="icon-name">time</span></div>
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:pin-fill"></iconify-icon></span><span class="icon-name">location</span></div>
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:globe-2-fill"></iconify-icon></span><span class="icon-name">globe</span></div>
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:gift-fill"></iconify-icon></span><span class="icon-name">gift</span></div>
+      </div>
+
+      <div class="eyebrow" style="margin-bottom: var(--s-3);">Interface · Media</div>
+      <div class="icon-grid" style="margin-bottom: var(--s-7);">
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:play-circle-fill"></iconify-icon></span><span class="icon-name">play</span></div>
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:pause-circle-fill"></iconify-icon></span><span class="icon-name">pause</span></div>
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:volume-up-fill"></iconify-icon></span><span class="icon-name">volume</span></div>
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:camera-fill"></iconify-icon></span><span class="icon-name">camera</span></div>
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:image-fill"></iconify-icon></span><span class="icon-name">image</span></div>
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:video-fill"></iconify-icon></span><span class="icon-name">video</span></div>
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:mic-fill"></iconify-icon></span><span class="icon-name">audio</span></div>
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:file-fill"></iconify-icon></span><span class="icon-name">file</span></div>
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:folder-fill"></iconify-icon></span><span class="icon-name">folder</span></div>
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:attach-2-fill"></iconify-icon></span><span class="icon-name">attach</span></div>
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:star-fill"></iconify-icon></span><span class="icon-name">favorite</span></div>
+        <div class="icon-cell"><span class="icon"><iconify-icon icon="eva:heart-fill"></iconify-icon></span><span class="icon-name">heart</span></div>
+      </div>
+
+      <div class="eyebrow" style="margin-bottom: var(--s-3);">Seven wings · Identity icons</div>
+      <p class="small" style="margin-bottom: var(--s-4); max-width: 54ch;">One icon per wing. Colored by its hue.</p>
+      <ul class="wing-list" style="list-style: none; padding: 0; margin: 0 0 var(--s-7);">
+        <li class="row gap-3" style="padding: var(--s-2) 0; align-items: center;"><span class="icon" style="font-size: 20px; color: var(--clay);"><iconify-icon icon="eva:home-fill"></iconify-icon></span><span>Sanctuary</span></li>
+        <li class="row gap-3" style="padding: var(--s-2) 0; align-items: center;"><span class="icon" style="font-size: 20px; color: var(--amber);"><iconify-icon icon="eva:flash-fill"></iconify-icon></span><span>Energy</span></li>
+        <li class="row gap-3" style="padding: var(--s-2) 0; align-items: center;"><span class="icon" style="font-size: 20px; color: var(--gold);"><iconify-icon icon="eva:color-palette-fill"></iconify-icon></span><span>Art</span></li>
+        <li class="row gap-3" style="padding: var(--s-2) 0; align-items: center;"><span class="icon" style="font-size: 20px; color: var(--sage);"><iconify-icon icon="eva:activity-fill"></iconify-icon></span><span>Wellness</span></li>
+        <li class="row gap-3" style="padding: var(--s-2) 0; align-items: center;"><span class="icon" style="font-size: 20px; color: var(--slate);"><iconify-icon icon="eva:book-fill"></iconify-icon></span><span>Learning</span></li>
+        <li class="row gap-3" style="padding: var(--s-2) 0; align-items: center;"><span class="icon" style="font-size: 20px; color: var(--indigo);"><iconify-icon icon="eva:bulb-fill"></iconify-icon></span><span>Labs</span></li>
+        <li class="row gap-3" style="padding: var(--s-2) 0; align-items: center;"><span class="icon" style="font-size: 20px; color: var(--plum);"><iconify-icon icon="eva:browser-fill"></iconify-icon></span><span>Games</span></li>
+      </ul>
+
+      <div class="eyebrow" style="margin-bottom: var(--s-3);">Icons in context</div>
+      <p class="small" style="margin-bottom: var(--s-4);">Icons inherit text color and pair with labels. Same size as text by default.</p>
+      <div class="row wrap gap-3" style="margin-bottom: var(--s-5);">
+        <button class="btn btn-primary"><iconify-icon icon="eva:plus-fill" style="font-size: 1.1em;"></iconify-icon>New</button>
+        <button class="btn btn-secondary"><iconify-icon icon="eva:download-fill" style="font-size: 1.1em;"></iconify-icon>Download</button>
+        <button class="btn btn-secondary"><iconify-icon icon="eva:edit-fill" style="font-size: 1.1em;"></iconify-icon>Edit</button>
+        <button class="btn btn-ghost"><iconify-icon icon="eva:share-fill" style="font-size: 1.1em;"></iconify-icon>Share</button>
+      </div>
+      <div class="row wrap gap-5" style="margin-bottom: var(--s-5);">
+        <span class="tag"><span class="tag-dot" style="background: var(--sage);"></span><iconify-icon icon="eva:checkmark-circle-fill" style="font-size: 1em;"></iconify-icon>Verified</span>
+        <span class="tag"><span class="tag-dot" style="background: var(--clay);"></span><iconify-icon icon="eva:pin-fill" style="font-size: 1em;"></iconify-icon>Calca, Perú</span>
+        <span class="tag"><span class="tag-dot" style="background: var(--amber);"></span><iconify-icon icon="eva:clock-fill" style="font-size: 1em;"></iconify-icon>Now</span>
+      </div>
+    </section>
+
+    <!-- ─── Typography ─── -->
+    <section class="section" id="type">
+      <div class="eyebrow">Typography</div>
+      <h2 class="h-2" style="margin-bottom: var(--s-4);">Two voices</h2>
+      <p class="body" style="max-width: 54ch; margin-bottom: var(--s-6);">
+        Ayni Sanctuary, signed in stone. The selectors below let you audition every Garamond-family member on Google Fonts — six in each slot. The whole type section re-renders in the chosen pairing, and the choice is remembered in this browser. Display lives at the top; text lives with the body specimen below.
+      </p>
+
+      <div class="font-controls" role="region" aria-label="Display font selector">
+        <div class="font-control">
+          <label for="font-display-pick">Display · 3 finalists</label>
+          <select id="font-display-pick" data-slot="display"></select>
+          <span class="font-control-note" data-font-note>H1, H2, H3, display, lead</span>
+        </div>
+      </div>
+
+      <div class="specimen">
+        <div class="eyebrow">Display · <span data-font-label="display">Shippori Antique</span></div>
+        <div class="h-display" style="margin: var(--s-2) 0;">Ayni Sanctuary</div>
+        <div class="mono">5.5rem · 300 · -0.02em</div>
+      </div>
+      <div class="specimen">
+        <div class="eyebrow">H1 · <span data-font-label="display">Shippori Antique</span></div>
+        <div class="h-1" style="margin: var(--s-2) 0;">Sacred reciprocity</div>
+        <div class="mono">4rem · 300 · 1.1 leading</div>
+      </div>
+      <div class="specimen">
+        <div class="eyebrow">H2 · <span data-font-label="display">Shippori Antique</span></div>
+        <div class="h-2" style="margin: var(--s-2) 0;">Seven wings, one vision</div>
+        <div class="mono">2.75rem · 400 · -0.02em</div>
+      </div>
+      <div class="specimen">
+        <div class="eyebrow">H3 · <span data-font-label="display">Shippori Antique</span></div>
+        <div class="h-3" style="margin: var(--s-2) 0;">The sovereign core</div>
+        <div class="mono">2rem · 400</div>
+      </div>
+      <div class="specimen">
+        <div class="eyebrow">H4 · <span data-font-label="text">Inter Medium</span></div>
+        <div class="h-4" style="margin: var(--s-2) 0;">Section heading</div>
+        <div class="mono">1.5rem · 500</div>
+      </div>
+      <div class="specimen">
+        <div class="eyebrow">Lead · <span data-font-label="text">Inter Light</span></div>
+        <p class="lead" style="margin: var(--s-2) 0; max-width: 54ch;">Generous leading. Reads at rest.</p>
+        <div class="mono">1.25rem · 300 · 1.8 leading</div>
+      </div>
+      <div class="specimen">
+        <div class="eyebrow">Body · <span data-font-label="text">Inter</span></div>
+        <p class="body" style="margin: var(--s-2) 0; max-width: 54ch;">Body text at a comfortable reading size. Clear and functional. The type steps back so the words come forward.</p>
+        <div class="mono">1rem · 400 · 1.6 leading</div>
+      </div>
+
+      <div class="font-controls" role="region" aria-label="Text font selector" style="margin-top: var(--s-6);">
+        <div class="font-control">
+          <label for="font-text-pick">Text · 3 finalists</label>
+          <select id="font-text-pick" data-slot="text"></select>
+          <span class="font-control-note" data-font-note>Body, UI, eyebrows, captions</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── Space ─── -->
+    <section class="section" id="space">
+      <div class="eyebrow">Space</div>
+      <h2 class="h-2" style="margin-bottom: var(--s-4);">Space is strategy</h2>
+      <p class="body" style="max-width: 54ch; margin-bottom: var(--s-7);">
+        Eight stops on a 4px base. Not because eight is sacred. Because fewer than eight is too tight for editorial work, and more than eight invites indecision. Every gap on this page is one of these eight.
+      </p>
+
+      <div class="grid-2">
+        <!-- Scale -->
+        <div class="card">
+          <div class="eyebrow" style="margin-bottom: var(--s-4);">Scale</div>
+          <div class="stack gap-3">
+            <div class="row gap-4" style="align-items: center;"><span class="mono" style="min-width: 56px;">--s-1</span><div style="background: var(--gold); height: 16px; border-radius: var(--r); width: 4px;"></div><span class="small">4px</span></div>
+            <div class="row gap-4" style="align-items: center;"><span class="mono" style="min-width: 56px;">--s-2</span><div style="background: var(--gold); height: 16px; border-radius: var(--r); width: 8px;"></div><span class="small">8px</span></div>
+            <div class="row gap-4" style="align-items: center;"><span class="mono" style="min-width: 56px;">--s-3</span><div style="background: var(--gold); height: 16px; border-radius: var(--r); width: 12px;"></div><span class="small">12px</span></div>
+            <div class="row gap-4" style="align-items: center;"><span class="mono" style="min-width: 56px;">--s-4</span><div style="background: var(--gold); height: 16px; border-radius: var(--r); width: 16px;"></div><span class="small">16px</span></div>
+            <div class="row gap-4" style="align-items: center;"><span class="mono" style="min-width: 56px;">--s-5</span><div style="background: var(--gold); height: 16px; border-radius: var(--r); width: 24px;"></div><span class="small">24px</span></div>
+            <div class="row gap-4" style="align-items: center;"><span class="mono" style="min-width: 56px;">--s-6</span><div style="background: var(--gold); height: 16px; border-radius: var(--r); width: 32px;"></div><span class="small">32px</span></div>
+            <div class="row gap-4" style="align-items: center;"><span class="mono" style="min-width: 56px;">--s-7</span><div style="background: var(--gold); height: 16px; border-radius: var(--r); width: 48px;"></div><span class="small">48px</span></div>
+            <div class="row gap-4" style="align-items: center;"><span class="mono" style="min-width: 56px;">--s-8</span><div style="background: var(--gold); height: 16px; border-radius: var(--r); width: 80px;"></div><span class="small">80px</span></div>
+          </div>
+        </div>
+
+        <!-- Radius + how padding nests -->
+        <div class="stack gap-5">
+          <div class="card">
+            <div class="eyebrow" style="margin-bottom: var(--s-4);">Radius · only two</div>
+            <div class="row gap-5">
+              <div class="row gap-3" style="align-items: center;">
+                <div style="width: 56px; height: 56px; min-width: 56px; background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--r);"></div>
+                <div>
+                  <span class="small" style="font-weight: var(--w-med);">8px</span>
+                  <span class="small"> · Cards, inputs, buttons</span>
+                </div>
+              </div>
+              <div class="row gap-3" style="align-items: center;">
+                <div style="width: 56px; height: 56px; min-width: 56px; background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--r-full);"></div>
+                <div>
+                  <span class="small" style="font-weight: var(--w-med);">Full</span>
+                  <span class="small"> · Pills, dots, avatars</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card showing how padding applies -->
+          <div class="card" style="padding: var(--s-2);">
+            <div class="eyebrow" style="margin-bottom: var(--s-2);">Card padding --s-2 (8px)</div>
+            <div class="demo-pad" style="padding: var(--s-3);">
+              <div class="small" style="margin-bottom: var(--s-3);">Inner padding --s-3 (12px)</div>
+              <div class="demo-pad-inner" style="padding: var(--s-4);">
+                <div class="h-4" style="font-size: var(--t-body); margin-bottom: var(--s-2);">Content padding --s-4 (16px)</div>
+                <p class="small">Every layer of padding is a token. Nesting compounds the rhythm. The eye reads it as order.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── Separators ─── -->
+    <section class="section" id="separators">
+      <div class="eyebrow">Separators</div>
+      <h2 class="h-2" style="margin-bottom: var(--s-4);">Hairlines and the spectrum</h2>
+      <p class="body" style="max-width: 54ch; margin-bottom: var(--s-7);">
+        Three ways to divide. A hairline for quiet separation. A spectrum line for a transition between worlds. Whitespace for rest.
+      </p>
+
+      <div class="eyebrow" style="margin-bottom: var(--s-3);">Hairline · default</div>
+      <hr style="border: none; border-top: 1px solid var(--border-subtle); margin-bottom: var(--s-7);">
+
+      <div class="eyebrow" style="margin-bottom: var(--s-3);">Spectrum · wing to wing</div>
+      <hr class="rainbow-line" style="margin-bottom: var(--s-7);">
+
+      <div class="eyebrow" style="margin-bottom: var(--s-3);">Whitespace · --s-8 between</div>
+      <div style="height: var(--s-8);"></div>
+    </section>
+
+    <!-- ─── Components ─── -->
+    <section class="section" id="components">
+      <div class="eyebrow">Components</div>
+      <h2 class="h-2" style="margin-bottom: var(--s-4);">Form follows function</h2>
+      <p class="body" style="max-width: 54ch; margin-bottom: var(--s-7);">
+        Every component uses the same radius, the same spacing rhythm, the same motion curve. Variation comes from content and intent, not from a different border treatment.
+      </p>
+
+      <!-- Buttons -->
+      <div class="eyebrow" style="margin-bottom: var(--s-3);">Buttons · Variants</div>
+      <div class="row wrap gap-3" style="margin-bottom: var(--s-5);">
+        <button class="btn btn-primary">Primary</button>
+        <button class="btn btn-secondary">Secondary</button>
+        <button class="btn btn-ghost">Ghost</button>
+        <button class="btn btn-primary btn-disabled">Disabled</button>
+      </div>
+
+      <div class="eyebrow" style="margin-bottom: var(--s-3);">Buttons · Sizes</div>
+      <div class="row wrap gap-3" style="margin-bottom: var(--s-5);">
+        <button class="btn btn-primary btn-sm">Small</button>
+        <button class="btn btn-primary">Medium</button>
+        <button class="btn btn-primary btn-lg">Large</button>
+      </div>
+
+      <div class="eyebrow" style="margin-bottom: var(--s-3);">Buttons · Wing accents</div>
+      <div class="row wrap gap-3" style="margin-bottom: var(--s-7);">
+        <button class="btn btn-wing btn-sm" style="background: var(--clay);">Sanctuary</button>
+        <button class="btn btn-wing btn-sm" style="background: var(--amber);">Energy</button>
+        <button class="btn btn-wing btn-sm" style="background: var(--gold); color: var(--ink);">Art</button>
+        <button class="btn btn-wing btn-sm" style="background: var(--sage);">Wellness</button>
+        <button class="btn btn-wing btn-sm" style="background: var(--slate);">Learning</button>
+        <button class="btn btn-wing btn-sm" style="background: var(--indigo);">Labs</button>
+        <button class="btn btn-wing btn-sm" style="background: var(--plum);">Games</button>
+      </div>
+
+      <!-- Tags -->
+      <div class="eyebrow" style="margin-bottom: var(--s-3);">Tags · Seven wings</div>
+      <div class="row wrap gap-5" style="margin-bottom: var(--s-7);">
+        <span class="tag"><iconify-icon icon="eva:home-fill" style="color: var(--clay);"></iconify-icon>Sanctuary</span>
+        <span class="tag"><iconify-icon icon="eva:flash-fill" style="color: var(--amber);"></iconify-icon>Energy</span>
+        <span class="tag"><iconify-icon icon="eva:color-palette-fill" style="color: var(--gold);"></iconify-icon>Art</span>
+        <span class="tag"><iconify-icon icon="eva:activity-fill" style="color: var(--sage);"></iconify-icon>Wellness</span>
+        <span class="tag"><iconify-icon icon="eva:book-fill" style="color: var(--slate);"></iconify-icon>Learning</span>
+        <span class="tag"><iconify-icon icon="eva:bulb-fill" style="color: var(--indigo);"></iconify-icon>Labs</span>
+        <span class="tag"><iconify-icon icon="eva:browser-fill" style="color: var(--plum);"></iconify-icon>Games</span>
+      </div>
+
+      <!-- Form -->
+      <div class="eyebrow" style="margin-bottom: var(--s-3);">Form fields</div>
+      <div style="max-width: 440px; margin-bottom: var(--s-7);">
+        <div class="field">
+          <label class="label">Full name</label>
+          <input class="input" type="text" placeholder="Enter your name">
+          <div class="hint">Required. Appears on your profile.</div>
+        </div>
+        <div class="field">
+          <label class="label">Email</label>
+          <input class="input" type="email" placeholder="you@example.com">
+        </div>
+        <div class="field">
+          <label class="label">Message</label>
+          <textarea class="textarea" rows="3" placeholder="Tell us about your intention..."></textarea>
+        </div>
+        <div class="row gap-3">
+          <button class="btn btn-primary">Send</button>
+          <button class="btn btn-ghost">Cancel</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── Footer ─── -->
+    <footer class="footer">
+      <div class="eyebrow">Ayni Consciousness Collective</div>
+      <p class="small" style="margin-top: var(--s-3); max-width: 48ch; margin-left: auto; margin-right: auto;">A living document. Tokens update every surface.</p>
+    </footer>
+
+  </div>
+  <script src="fonts.js"></script>
+</body>
+</html>

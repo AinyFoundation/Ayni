@@ -1,0 +1,1 @@
+# Skills directory. See [AGENTS.md](../AGENTS.md) § Auto-loaded skills for the canonical list. Add a skill: create `.agents/skills/<name>/SKILL.md` with frontmatter.

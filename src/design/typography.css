@@ -1,0 +1,71 @@
+/* Ayni Design System — Typography
+ * Type scale classes referencing token variables.
+ * Fonts are tokens — change --font-display/--font-text to swap site-wide.
+ * 
+ * Renamed from .h-display/.h-1/.h-2/.h-3/.h-4 to .display/.heading-1/.heading-2/.heading-3/.heading-4
+ * to avoid collision with Tailwind v4 height utilities (.h-1 through .h-4)
+ */
+
+.display {
+  font-family: var(--font-display);
+  font-size: var(--text-display);
+  font-weight: var(--weight-light);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-display);
+}
+
+.heading-1 {
+  font-family: var(--font-display);
+  font-size: var(--text-h1);
+  font-weight: var(--weight-light);
+  letter-spacing: var(--tracking-display);
+  line-height: var(--leading-tight);
+}
+
+.heading-2 {
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: var(--weight-book);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-norm);
+}
+
+.heading-3 {
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-book);
+  line-height: var(--leading-snug);
+}
+
+.heading-4 {
+  font-family: var(--font-text);
+  font-size: var(--text-h4);
+  font-weight: var(--weight-med);
+  line-height: var(--leading-snug);
+}
+
+.lead {
+  font-size: var(--text-lead);
+  line-height: var(--leading-loose);
+  color: var(--text-2);
+  font-weight: var(--weight-light);
+}
+
+.body-text {
+  font-size: var(--text-body);
+  line-height: var(--leading-norm);
+  color: var(--text-2);
+}
+
+.small {
+  font-size: var(--text-sm);
+  color: var(--text-3);
+}
+
+.eyebrow {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-med);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  color: var(--text-3);
+}

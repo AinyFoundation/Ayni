@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ayni · Components</title>
+  <!-- Local fonts (self-hosted) -->
+  <style>
+    @font-face {
+      font-family: 'Shippori Antique';
+      font-style: normal;
+      font-weight: 400;
+      font-display: swap;
+      src: url('../../static/fonts/shippori-antique/shippori-antique-v11-latin-regular.woff2') format('woff2');
+    }
+    @font-face {
+      font-family: 'The Seasons';
+      font-style: normal;
+      font-weight: 400;
+      font-display: swap;
+      src: url('../../static/fonts/the-seasons/the-seasons-regular/the-seasons-regular.ttf') format('truetype');
+    }
+  </style>
+  
+  <link rel="stylesheet" href="tokens.css">
+  <link rel="stylesheet" href="base.css">
+  <style>
+    /* ── Components page-specific overrides ── */
+    .section--center { text-align: center; }
+    .section--center .logo-img { height: 480px; margin: 0 0 -130px; }
+    .section--center h1 { margin: 0; font-family: 'Noto Serif' !important; font-weight: 300; }
+
+    /* ── Prototype 01: infinite-scroll rainbow strip ── */
+    .proto-rainbow {
+      width: 100%;
+      overflow: hidden;            /* clip the overflowing track */
+      position: relative;
+    }
+    .proto-rainbow .track {
+      display: flex;
+      width: max-content;
+      animation: rainbow-scroll 30s linear infinite;
+      align-items: stretch;
+    }
+    .proto-rainbow .row {
+      display: flex;
+      flex: 0 0 auto;
+      height: 160px;               /* strip thickness — visible from across the room */
+      width: 200vw;                /* each row = 2 viewports wide; track = 4 vw total */
+    }
+    .proto-rainbow .band {
+      flex: 1 1 0;
+      min-width: 0;                /* let flex shrink children properly */
+    }
+    .proto-rainbow .band:nth-child(1) { background: linear-gradient(to right, var(--plum)   0%, var(--clay)   100%); }
+    .proto-rainbow .band:nth-child(2) { background: linear-gradient(to right, var(--clay)   0%, var(--amber)  100%); }
+    .proto-rainbow .band:nth-child(3) { background: linear-gradient(to right, var(--amber)  0%, var(--gold)   100%); }
+    .proto-rainbow .band:nth-child(4) { background: linear-gradient(to right, var(--gold)   0%, var(--sage)   100%); }
+    .proto-rainbow .band:nth-child(5) { background: linear-gradient(to right, var(--sage)   0%, var(--slate)  100%); }
+    .proto-rainbow .band:nth-child(6) { background: linear-gradient(to right, var(--slate)  0%, var(--indigo) 100%); }
+    .proto-rainbow .band:nth-child(7) { background: linear-gradient(to right, var(--indigo) 0%, var(--plum)   100%); }
+
+    @keyframes rainbow-scroll {
+      from { transform: translate3d(0, 0, 0); }
+      to   { transform: translate3d(-50%, 0, 0); }   /* shift by one row = seamless loop */
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .proto-rainbow .track { animation: none; transform: translate3d(0,0,0); }
+    }
+  </style>
+</head>
+<body class="blueprint-on">
+  <div class="page">
+
+    <!-- ─── Nav ─── -->
+    <nav class="nav">
+      <div class="logo-mark">
+        <img src="assets/ayni-logo.png" alt="Ayni" class="logo-img">
+        <span class="logo-text">Ayni</span>
+      </div>
+      <div class="nav-links">
+        <a href="design-system.html">Design System</a>
+        <a href="components.html" class="is-top">Components</a>
+        <span class="nav-divider" aria-hidden="true"></span>
+        <a href="#color">Color</a>
+        <a href="#cards">Cards</a>
+        <a href="#icons">Icons</a>
+        <a href="#type">Typography</a>
+        <a href="#space">Space</a>
+        <a href="#separators">Separators</a>
+        <a href="#components">Components</a>
+      </div>
+    </nav>
+
+    <!-- ─── Components ─── -->
+    <section class="section section--center" id="components">
+      <img src="assets/ayni-logo.png" alt="Ayni" class="logo-img">
+      <h1 class="h-display">Ayni</h1>
+    </section>
+
+    <!-- ─── Prototype 01: Rainbow strip ─── -->
+    <section class="section" id="prototype-rainbow" style="padding-top: 0; padding-bottom: var(--s-7);">
+      <p class="h-4" style="margin-bottom: var(--s-3);">Prototype 01 · Infinite rainbow strip</p>
+      <p class="small" style="margin-bottom: var(--s-5); max-width: 56ch;">
+        Seven wing colors with a gradient between each pair. The row is duplicated and translated −50% per loop — seamless infinite scroll to the right.
+      </p>
+      <div class="proto-rainbow" aria-hidden="true">
+        <div class="track">
+          <div class="row">
+            <div class="band"></div>
+            <div class="band"></div>
+            <div class="band"></div>
+            <div class="band"></div>
+            <div class="band"></div>
+            <div class="band"></div>
+            <div class="band"></div>
+          </div>
+          <div class="row" aria-hidden="true">
+            <div class="band"></div>
+            <div class="band"></div>
+            <div class="band"></div>
+            <div class="band"></div>
+            <div class="band"></div>
+            <div class="band"></div>
+            <div class="band"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── Footer ─── -->
+    <footer class="footer">
+    </footer>
+
+  </div>
+  <script src="fonts.js"></script>
+</body>
+</html>

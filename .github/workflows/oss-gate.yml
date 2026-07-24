@@ -1,0 +1,144 @@
+name: oss-gate
+
+# The open-source-ready gate. Runs on every PR and every push to main.
+# Seven deterministic file-presence checks. No language assumption, no runtime deps.
+# Fails the PR if any check fails.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# File-presence checks only — needs read on contents, nothing else.
+# Explicit per GitHub docs (default since Feb 2023 is read-only).
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run OSS gate checks
+        id: checks
+        run: |
+          set -u
+          root="$GITHUB_WORKSPACE"
+          pass=0
+          fail=0
+
+          # Check 0: Each research document in docs/research/<slug>/ has valid YAML frontmatter with `owns:`
+          # (self-maintaining docs — registry is auto-built from frontmatter)
+          registry_ok=1
+          registry_detail=""
+          while IFS= read -r plan_file; do
+            [ -z "$plan_file" ] && continue
+            # Find YAML frontmatter (first --- ... --- pair anywhere in file)
+            fm=$(awk '
+              /^---[[:space:]]*$/ && !in_fm && !found { in_fm=1; next }
+              in_fm && /^---[[:space:]]*$/ { found=1; exit }
+              in_fm { print }
+            ' "$plan_file")
+            if [ -z "$fm" ]; then
+              registry_ok=0
+              registry_detail="missing YAML frontmatter: $plan_file"
+              break
+            fi
+            # Check owns: key exists
+            if ! echo "$fm" | grep -qE '^owns:'; then
+              registry_ok=0
+              registry_detail="missing 'owns:' key in frontmatter: $plan_file"
+              break
+            fi
+          done < <(find "$root/docs/research" -mindepth 2 -maxdepth 2 -type f -name "research.md" 2>/dev/null)
+
+          if [ "$registry_ok" = "1" ]; then
+            check "Research frontmatter valid (every research document declares owns:)" "ok" ""
+          else
+            check "Research frontmatter valid" "fail" "$registry_detail"
+          fi
+
+          check() {
+            local name="$1"
+            local result="$2"   # "ok" or "fail"
+            local detail="$3"
+            if [ "$result" = "ok" ]; then
+              echo "✓ $name"
+              pass=$((pass + 1))
+            else
+              echo "✗ $name — $detail"
+              fail=$((fail + 1))
+            fi
+          }
+
+          # Check 1: README.md exists, non-empty, contains a `##` heading.
+          if [ -s "$root/README.md" ] && grep -qE '^## ' "$root/README.md"; then
+            check "README.md present with section heading" "ok" ""
+          else
+            check "README.md present with section heading" "fail" "README.md is missing, empty, or has no '## ' heading"
+          fi
+
+          # Check 2: CONTRIBUTING.md exists and contains "First contributions".
+          if [ -s "$root/CONTRIBUTING.md" ] && grep -qF "First contributions" "$root/CONTRIBUTING.md"; then
+            check "CONTRIBUTING.md has First contributions section" "ok" ""
+          else
+            check "CONTRIBUTING.md has First contributions section" "fail" "CONTRIBUTING.md is missing, empty, or has no 'First contributions' section"
+          fi
+
+          # Check 3: CODE_OF_CONDUCT.md exists and contains "Contributor Covenant".
+          if [ -s "$root/CODE_OF_CONDUCT.md" ] && grep -qF "Contributor Covenant" "$root/CODE_OF_CONDUCT.md"; then
+            check "CODE_OF_CONDUCT.md is Contributor Covenant" "ok" ""
+          else
+            check "CODE_OF_CONDUCT.md is Contributor Covenant" "fail" "CODE_OF_CONDUCT.md is missing, empty, or is not the Contributor Covenant"
+          fi
+
+          # Check 4: SECURITY.md exists and contains "vulnerability".
+          if [ -s "$root/SECURITY.md" ] && grep -qiF "vulnerability" "$root/SECURITY.md"; then
+            check "SECURITY.md covers vulnerabilities" "ok" ""
+          else
+            check "SECURITY.md covers vulnerabilities" "fail" "SECURITY.md is missing, empty, or does not mention vulnerabilities"
+          fi
+
+          # Check 5: .github/PULL_REQUEST_TEMPLATE.md exists and references CONTRIBUTING.md.
+          if [ -s "$root/.github/PULL_REQUEST_TEMPLATE.md" ] && grep -qF "CONTRIBUTING.md" "$root/.github/PULL_REQUEST_TEMPLATE.md"; then
+            check "PR template references CONTRIBUTING.md" "ok" ""
+          else
+            check "PR template references CONTRIBUTING.md" "fail" ".github/PULL_REQUEST_TEMPLATE.md is missing, empty, or does not reference CONTRIBUTING.md"
+          fi
+
+          # Check 6: LICENSE present, non-empty, Apache-2.0.
+          if [ -s "$root/LICENSE" ] && grep -qiF "Apache License" "$root/LICENSE"; then
+            check "LICENSE present and Apache-2.0" "ok" ""
+          else
+            check "LICENSE present and Apache-2.0" "fail" "LICENSE is missing, empty, or not Apache-2.0"
+          fi
+
+          # Check 7: No orphan research files at docs/research/ top level.
+          # Research files must live under docs/research/<slug>/ as research.md.
+          orphan_ok=1
+          orphan_detail=""
+          for f in "$root/docs/research"/*.md; do
+            [ -f "$f" ] || continue
+            base=$(basename "$f")
+            case "$base" in
+              README.md) ;;
+              *) orphan_ok=0; orphan_detail="orphan research file at docs/research/$base — move it under docs/research/<slug>/research.md" ;;
+            esac
+          done
+          if [ "$orphan_ok" = "1" ]; then
+            check "No orphan research files at docs/research/" "ok" ""
+          else
+            check "No orphan research files at docs/research/" "fail" "$orphan_detail"
+          fi
+
+          echo
+          echo "Summary: $pass passed, $fail failed"
+
+          if [ "$fail" -gt 0 ]; then
+            echo "NOT READY — $fail issue(s) above"
+            exit 1
+          fi
+
+          echo "READY"

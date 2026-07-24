@@ -1,0 +1,523 @@
+name: docs-suggest
+
+# PR-time documentation suggestion gate. Self-maintaining.
+# Two-stage matching:
+#   1. Shell match against registry (deterministic, free, ~5 sec)
+#   2. LLM match against an OpenAI-compatible chat completions endpoint
+#      (catches novel patterns, ~$0.003/PR at default settings)
+# Merges both, deduplicates, posts/updates a single PR comment.
+# NEVER auto-commits — suggestions only.
+#
+# Mapping source: docs/research/<slug>/research.md frontmatter `owns:` blocks (read inlined below).
+# No central MAPPING to maintain — each research document declares what it owns.
+#
+# Required secrets:
+#   - GITHUB_TOKEN (auto-provided)
+#   - LLM_API_KEY (optional; shell-only mode without it)
+#
+# Required variables (Settings → Secrets and variables → Actions → Variables):
+#   - LLM_API_BASE  (default: https://api.minimax.io/v1)
+#   - LLM_MODEL     (default: MiniMax-M3)
+# Override at any time without changing this file. The defaults are vendor-flexible:
+# any OpenAI-compatible endpoint works (Anthropic proxy, OpenRouter, Ollama via
+# OpenAI shim, local vLLM, etc.). The recommended long-term path is a self-hosted
+# open-source model (e.g. Llama 3.3 70B via vLLM on the project's NixOS infra)
+# to remove the third-party dependency entirely. See HANDOFF.md 2026-07-02.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  # LLM vendor is overridable via repository variables. Defaults are sensible for
+  # out-of-box use; the project constitution requires self-hosted open-source
+  # dependencies for core functionality, but this is a non-critical-path CI step
+  # that runs only when secrets are present and degrades gracefully otherwise.
+  API_BASE: ${{ vars.LLM_API_BASE || 'https://api.minimax.io/v1' }}
+  MODEL_NAME: ${{ vars.LLM_MODEL || 'MiniMax-M3' }}
+  LLM_MAX_TOKENS: "2000"
+  MAX_FILES_FOR_LLM: "30"
+  MAX_LINES_PER_FILE: "200"
+
+# Static rules: one-liners for cross-cutting concerns.
+# Domain-specific ownership lives in docs/research/<slug>/research.md frontmatter.
+STATIC_RULES: |
+  AGENTS.md|.agents/skills/* (review for rule conflicts), HANDOFF.md
+  HANDOFF.md|docs/research/*/research.md if a major decision is logged
+  CONTEXT.md|README.md (terms table)
+  README.md|CONTEXT.md (cross-link new terms)
+  CONTRIBUTING.md|HANDOFF.md (note process change)
+  SECURITY.md|CONTRIBUTING.md (cross-reference if reporting flow changed)
+  CODE_OF_CONDUCT.md|CONTRIBUTING.md (CoC reference)
+  LICENSE|NONE
+  CLAUDE.md|NONE (symlink to AGENTS.md)
+  # ADRs
+  docs/adr/[0-9]*.md|HANDOFF.md (note in Recent decisions), related research document if ADR changes architecture
+  # Skills
+  .agents/skills/*/SKILL.md|AGENTS.md (auto-loaded skills table)
+  .agents/skills/*/SKILL.md|.agents/skills/README.md (skill index) if it exists
+  .agents/skills/*/scripts/**|.agents/skills/*/SKILL.md (script usage examples)
+  .agents/skills/*/content/**|.agents/skills/*/SKILL.md (referenced resources)
+  # Design
+  docs/design/*.md|docs/research/*/research.md if tokens/components change (cross-cutting)
+  # Research
+  docs/research/README.md|NONE
+  docs/research/*/research.md|HANDOFF.md if the change is a major reversal
+  # CI / templates
+  .github/CODEOWNERS|CONTRIBUTING.md (reviewers paragraph) — MANUAL EDIT ONLY
+  .github/workflows/*.yml|CONTRIBUTING.md (CI section)
+  .github/workflows/oss-gate.yml|.github/workflows/docs-suggest.yml (mirror mapping if added)
+  .github/workflows/docs-suggest.yml|.github/workflows/oss-gate.yml (mirror mapping if added)
+  .github/ISSUE_TEMPLATE/*|CONTRIBUTING.md (issue templates reference)
+  .github/PULL_REQUEST_TEMPLATE.md|CONTRIBUTING.md (PR process)
+  # Pi / Engram
+  .pi/mcp.json|AGENTS.md (memory & continuity section)
+  .pi/settings.json|AGENTS.md (provider reference)
+
+jobs:
+  docs-suggest:
+    name: Suggest doc updates
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Compute changed files
+        id: changed
+        run: |
+          set -euo pipefail
+          base_ref="${{ github.event.pull_request.base.ref }}"
+          git fetch origin "$base_ref" --depth=1
+          changed_files=$(git diff --name-only "origin/$base_ref"...HEAD || true)
+          if [ -z "$changed_files" ]; then
+            echo "no_files=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "no_files=false" >> "$GITHUB_OUTPUT"
+            echo "$changed_files" > changed_files.txt
+          fi
+          echo "Changed files:"
+          cat changed_files.txt 2>/dev/null || true
+
+      - name: Build self-discovering registry + static rules
+        id: build-mapping
+        if: steps.changed.outputs.no_files != 'true'
+        env:
+          STATIC_RULES: ${{ env.STATIC_RULES }}
+        run: |
+          set -euo pipefail
+          # Static rules (cross-cutting concerns)
+          echo "$STATIC_RULES" | grep -v '^\s*#' | grep -v '^\s*$' > static_rules.txt
+          # Dynamic rules (plan ownership — self-maintaining, inlined below)
+          > registry.txt
+          while IFS= read -r plan_file; do
+            # Skip archived plans (read-only)
+            case "$plan_file" in
+              */archive/*) continue ;;
+            esac
+            # Extract YAML frontmatter (first --- ... --- pair anywhere in file)
+            frontmatter=$(awk '
+              /^---[[:space:]]*$/ && !in_fm && !found { in_fm=1; next }
+              in_fm && /^---[[:space:]]*$/ { found=1; exit }
+              in_fm { print }
+            ' "$plan_file")
+            [ -z "$frontmatter" ] && continue
+            # Extract owns: list
+            owns=$(echo "$frontmatter" | awk '
+              /^owns:[[:space:]]*$/ { flag=1; next }
+              /^[a-zA-Z]/ && !/^owns:/ { flag=0 }
+              flag && /^[[:space:]]*-/ {
+                sub(/^[[:space:]]*-[[:space:]]*/, "")
+                print
+              }
+            ')
+            [ -z "$owns" ] && continue
+            while IFS= read -r pattern; do
+              [ -z "$pattern" ] && continue
+              echo "${pattern}|${plan_file}" >> registry.txt
+            done <<< "$owns"
+          done < <(find . -path ./node_modules -prune -o -path ./.git -prune -o -type f -name "research.md" -print 2>/dev/null | sort)
+
+          # Merge: registry rules + static rules
+          cat static_rules.txt registry.txt > mapping.txt
+          echo "Mapping built: $(wc -l < mapping.txt) rules"
+          echo "  static: $(wc -l < static_rules.txt)"
+          echo "  registry: $(wc -l < registry.txt)"
+
+          # Validate: detect ownership conflicts within registry
+          conflicts=$(awk -F'|' '{print $1}' registry.txt | sort | uniq -d)
+          if [ -n "$conflicts" ]; then
+            echo "::warning::Registry conflicts (same glob owned by multiple plans):"
+            echo "$conflicts"
+          fi
+
+      - name: Shell match against mapping
+        id: shell-match
+        if: steps.changed.outputs.no_files != 'true'
+        run: |
+          set -euo pipefail
+          if [ ! -s mapping.txt ]; then
+            echo "::warning::mapping.txt is empty — shell match skipped"
+            > shell_matches.txt
+            exit 0
+          fi
+
+          > shell_matches.txt
+          while IFS= read -r changed_file; do
+            [ -z "$changed_file" ] && continue
+            while IFS='|' read -r pattern docs; do
+              [ -z "$pattern" ] && continue
+              pattern=$(echo "$pattern" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+              docs=$(echo "$docs" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+              case "$changed_file" in
+                $pattern)
+                  key="${pattern}|${docs}"
+                  if ! grep -qF "$key" shell_matches.txt; then
+                    echo "$key" >> shell_matches.txt
+                  fi
+                  ;;
+              esac
+            done < mapping.txt
+          done < changed_files.txt
+
+          echo "Shell matches:"
+          cat shell_matches.txt || true
+
+      - name: Truncate diff for LLM
+        id: truncate
+        if: steps.changed.outputs.no_files != 'true'
+        env:
+          MAX_FILES: ${{ env.MAX_FILES_FOR_LLM }}
+          MAX_LINES: ${{ env.MAX_LINES_PER_FILE }}
+        run: |
+          set -euo pipefail
+          base_ref="${{ github.event.pull_request.base.ref }}"
+          > llm_diff.txt
+          file_count=0
+          while IFS= read -r changed_file; do
+            [ -z "$changed_file" ] && continue
+            file_count=$((file_count + 1))
+            [ "$file_count" -gt "$MAX_FILES" ] && {
+              echo "(truncated: more than $MAX_FILES files)" >> llm_diff.txt
+              break
+            }
+            # Get diff for this one file, truncated
+            file_diff=$(git diff "origin/$base_ref"...HEAD -- "$changed_file" 2>/dev/null \
+              | head -n "$MAX_LINES" || true)
+            {
+              echo "=== $changed_file ==="
+              echo "$file_diff"
+              echo
+            } >> llm_diff.txt
+          done < changed_files.txt
+
+          diff_size=$(wc -c < llm_diff.txt)
+          echo "LLM diff size: ${diff_size} bytes (max ~32KB)"
+
+      - name: List existing docs (for LLM context)
+        id: list-docs
+        if: steps.changed.outputs.no_files != 'true'
+        run: |
+          set -euo pipefail
+          {
+            echo "Existing documentation files in this repo:"
+            find . -type f \( -name "*.md" -o -name "*.mdx" \) \
+              -not -path "./node_modules/*" \
+              -not -path "./.git/*" \
+              -not -path "./dist/*" \
+              -not -path "./.next/*" \
+              2>/dev/null \
+              | sort | head -100
+          } > docs_list.txt
+          echo "Found $(wc -l < docs_list.txt) docs (top 100 shown)"
+          head -20 docs_list.txt
+
+      - name: LLM match via configurable chat completions endpoint
+        id: llm-match
+        if: steps.changed.outputs.no_files != 'true' && env.LLM_API_KEY != ''
+        env:
+          API_BASE: ${{ env.API_BASE }}
+          MODEL_NAME: ${{ env.MODEL_NAME }}
+          LLM_MAX_TOKENS: ${{ env.LLM_MAX_TOKENS }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+        run: |
+          set -euo pipefail
+
+          # Build prompt — keep small, structured, parseable
+          read -r -d '' PROMPT <<'PROMPT_EOF' || true
+          You are a documentation-suggestion assistant for a software project.
+          Given a list of files changed in a pull request and a (possibly truncated) diff,
+          suggest which existing documentation files may need updating.
+
+          Rules:
+          - ONLY suggest documentation files from the provided "Existing docs" list
+          - Be terse — one sentence per suggestion, no preamble
+          - Skip suggestions for files that are auto-generated, in node_modules, or part of the plans archive
+          - If no docs need updating, return {"suggestions": []}
+          - Consider semantic relationships, not just file-name patterns
+            (e.g., changing a database schema → CONTEXT.md if new domain terms introduced;
+             adding a new env var → SECURITY.md if it could affect security reporting)
+
+          Output format: STRICT JSON, no markdown fences, no prose before/after.
+          Schema:
+          {
+            "suggestions": [
+              {"doc": "<path to existing doc>", "reason": "<terse reason>"},
+              ...
+            ]
+          }
+          PROMPT_EOF
+
+          # Build user message
+          {
+            echo "Changed files in this PR:"
+            sed 's/^/  /' changed_files.txt
+            echo
+            echo "Existing documentation files:"
+            cat docs_list.txt
+            echo
+            echo "Diff (possibly truncated):"
+            cat llm_diff.txt
+          } > llm_user.txt
+
+          # Call the configured LLM endpoint (OpenAI-compatible chat completions).
+          # Endpoint and model are overridable via repository variables (LLM_API_BASE,
+          # LLM_MODEL); defaults are set in the env block above.
+          request_body=$(jq -n \
+            --arg model "$MODEL_NAME" \
+            --arg system "$PROMPT" \
+            --arg user "$(cat llm_user.txt)" \
+            --argjson max_tokens "$LLM_MAX_TOKENS" \
+            '{
+              model: $model,
+              messages: [
+                {role: "system", content: $system},
+                {role: "user", content: $user}
+              ],
+              max_tokens: $max_tokens,
+              temperature: 0.1
+            }')
+
+          echo "Calling $API_BASE/chat/completions..."
+          response=$(curl -sS --max-time 60 \
+            -H "Authorization: Bearer $LLM_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d "$request_body" \
+            "$API_BASE/chat/completions" 2>&1) || {
+            echo "::warning::LLM call failed — falling back to shell-only mode"
+            echo "Error: $response" | head -5
+            > llm_matches.txt
+            exit 0
+          }
+
+          # Extract content from response
+          content=$(echo "$response" | jq -r '.choices[0].message.content // empty' 2>/dev/null)
+          if [ -z "$content" ]; then
+            echo "::warning::LLM returned empty content — falling back to shell-only mode"
+            echo "Response: $(echo "$response" | head -c 500)"
+            > llm_matches.txt
+            exit 0
+          fi
+
+          # Parse JSON output (handle possible ```json fences)
+          cleaned=$(echo "$content" | sed 's/^```json//; s/^```//; s/```$//' | tr -d '\r')
+          suggestions=$(echo "$cleaned" | jq -r '.suggestions[]? | "\(.doc)|\(.reason)"' 2>/dev/null) || {
+            echo "::warning::LLM JSON parse failed — falling back to shell-only mode"
+            echo "Raw content: $content" | head -5
+            > llm_matches.txt
+            exit 0
+          }
+
+          if [ -z "$suggestions" ]; then
+            echo "LLM returned no suggestions"
+            > llm_matches.txt
+            exit 0
+          fi
+
+          # Validate suggestions against existing docs
+          > llm_matches.txt
+          while IFS='|' read -r doc reason; do
+            [ -z "$doc" ] && continue
+            # Strip quotes if present
+            doc=$(echo "$doc" | sed 's/^"//; s/"$//')
+            # Only keep if doc actually exists in repo
+            if [ -f "$doc" ] || [ -f "./$doc" ]; then
+              echo "LLM|$doc|$reason" >> llm_matches.txt
+            else
+              echo "::notice::LLM suggested non-existent doc '$doc' — discarded"
+            fi
+          done <<< "$suggestions"
+
+          echo "LLM matches:"
+          cat llm_matches.txt || true
+
+      - name: LLM step skipped (no API key)
+        id: llm-skip
+        if: steps.changed.outputs.no_files != 'true' && env.LLM_API_KEY == ''
+        run: |
+          echo "LLM_API_KEY not set — running shell-only mode"
+          > llm_matches.txt
+
+      - name: Merge shell + LLM matches
+        id: merge
+        if: steps.changed.outputs.no_files != 'true'
+        run: |
+          set -euo pipefail
+          # Format:
+          #   shell:   <pattern>|<docs-suggested>
+          #   llm:     LLM|<doc-path>|<reason>
+          # To dedupe by doc-path:
+          #   - shell: split docs by ', ' and emit one line per doc
+          #   - llm:   already one doc per line
+          # Then dedupe by doc-path; if shell AND llm both suggest same doc,
+          # prefer the shell entry (deterministic, no LLM noise).
+
+          > merged_dedup.txt
+
+          # Process shell matches — split multi-doc entries by ', '
+          if [ -s shell_matches.txt ]; then
+            while IFS='|' read -r pattern docs; do
+              [ -z "$pattern" ] && continue
+              # Split docs by ', '
+              echo "$docs" | tr ',' '\n' | while IFS= read -r doc; do
+                doc=$(echo "$doc" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+                [ -z "$doc" ] && continue
+                if [ "$doc" = "NONE" ]; then continue; fi
+                echo "SHELL|$doc|$pattern" >> merged_dedup.txt
+              done
+            done < shell_matches.txt
+          fi
+
+          # Process LLM matches — already one doc per line
+          if [ -s llm_matches.txt ]; then
+            while IFS='|' read -r source doc reason; do
+              [ -z "$doc" ] && continue
+              echo "LLM|$doc|$reason" >> merged_dedup.txt
+            done < llm_matches.txt
+          fi
+
+          # Dedupe by doc-path. Prefer SHELL (deterministic) over LLM (speculative).
+          # Normalize SHELL doc paths first: strip trailing parenthetical annotations
+          # like " (CI section)" so SHELL and LLM match the same key for dedup.
+          awk -F'|' 'BEGIN{OFS="|"} {
+            if ($1 == "SHELL" && $2 ~ / \(/) {
+              sub(/ \([^)]+\)$/, "", $2)
+            }
+            print
+          }' merged_dedup.txt > merged_normalized.txt
+          awk -F'|' '!seen[$2]++' merged_normalized.txt > final_matches.txt
+          rm -f merged_normalized.txt
+
+          rm -f merged_dedup.txt
+
+          match_count=$(wc -l < final_matches.txt | tr -d ' ')
+          echo "Final matches (${match_count} entries, deduped by doc path):"
+          cat final_matches.txt
+
+          if [ "$match_count" -eq 0 ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Post suggestion comment
+        if: steps.changed.outputs.no_files != 'true' && steps.merge.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          {
+            echo "<!-- docs-suggest-bot -->"
+            echo "## 📚 Documentation suggestions"
+            echo
+            echo "Based on the files changed in this PR, the following docs may need updating."
+            echo "These are *suggestions only* — this workflow never modifies docs automatically."
+            echo
+            echo "<details>"
+            echo "<summary>Shell mapping (deterministic, free)</summary>"
+            echo
+            if [ -s shell_matches.txt ]; then
+              while IFS='|' read -r pattern docs; do
+                [ -z "$pattern" ] && continue
+                echo "- \`$pattern\` → $docs"
+              done < shell_matches.txt
+            else
+              echo "_No shell mapping matches_"
+            fi
+            echo
+            echo "</details>"
+            echo
+            echo "<details>"
+            echo "<summary>LLM analysis ($MODEL_NAME, ~\$0.003/PR)</summary>"
+            echo
+            if [ -s llm_matches.txt ]; then
+              while IFS='|' read -r source doc reason; do
+                [ -z "$doc" ] && continue
+                echo "- \`$doc\` — $reason"
+              done < llm_matches.txt
+            else
+              if [ -n "${{ secrets.LLM_API_KEY }}" ]; then
+                echo "_LLM ran but returned no additional suggestions_"
+              else
+                echo "_LLM step skipped (no \`LLM_API_KEY\` secret configured). Add one via Settings → Secrets to enable._"
+              fi
+            fi
+            echo
+            echo "</details>"
+            echo
+            echo "---"
+            echo "- **Mapping source:** \`.github/workflows/docs-suggest.yml\` § MAPPING"
+            echo "- **LLM model:** \`${{ env.MODEL_NAME }}\` via \`${{ env.API_BASE }}\`"
+            echo "- **To suppress:** add the pattern to MAPPING (shell side) or update MAPPING with explicit NONE."
+          } > comment.md
+
+          cat comment.md
+
+          existing_id=$(gh api \
+            --paginate \
+            "repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments" \
+            --jq '.[] | select(.body | contains("docs-suggest-bot")) | .id' \
+            | head -1 || true)
+
+          body=$(cat comment.md)
+
+          if [ -n "$existing_id" ]; then
+            gh api \
+              --method PATCH \
+              -H "Accept: application/vnd.github+json" \
+              "repos/${{ github.repository }}/issues/comments/${existing_id}" \
+              -f body="$body"
+          else
+            gh api \
+              --method POST \
+              -H "Accept: application/vnd.github+json" \
+              "repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments" \
+              -f body="$body"
+          fi
+
+      - name: Clean up stale prior comments (no matches this run)
+        if: steps.changed.outputs.no_files == 'true' || (steps.changed.outputs.no_files != 'true' && steps.merge.outputs.skip == 'true')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          existing_id=$(gh api \
+            --paginate \
+            "repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments" \
+            --jq '.[] | select(.body | contains("docs-suggest-bot")) | .id' \
+            | head -1 || true)
+          if [ -n "$existing_id" ]; then
+            echo "No matches this run — deleting prior suggestion comment"
+            gh api \
+              --method DELETE \
+              -H "Accept: application/vnd.github+json" \
+              "repos/${{ github.repository }}/issues/comments/${existing_id}"
+          else
+            echo "No matches, no prior comment — silent success"
+          fi

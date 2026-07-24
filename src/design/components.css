@@ -1,0 +1,223 @@
+/* Ayni Design System — Component Base Styles
+ * All values trace to tokens. Zero hardcoded colors, spacing, or fonts.
+ */
+
+/* ═══════════════════════════════════════════
+   BUTTONS
+   ═══════════════════════════════════════════ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-s-2);
+  font-family: var(--font-text);
+  font-size: var(--text-body);
+  font-weight: var(--weight-med);
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  padding: var(--spacing-s-3) var(--spacing-s-5);
+  transition:
+    transform var(--duration-quick) var(--ease),
+    opacity var(--duration-quick) var(--ease),
+    background var(--duration-quick) var(--ease),
+    border-color var(--duration-quick) var(--ease);
+}
+
+.btn:hover { transform: translateY(-1px); }
+.btn:active { transform: translateY(0); }
+.btn:focus-visible {
+  outline: 2px solid var(--ring-focus);
+  outline-offset: 2px;
+}
+
+.btn-primary {
+  background: var(--color-ink);
+  color: var(--color-paper);
+}
+.btn-primary:hover { opacity: 0.88; }
+
+.btn-secondary {
+  background: transparent;
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+.btn-secondary:hover {
+  border-color: var(--text);
+  background: var(--surface-2);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-2);
+  padding-left: var(--spacing-s-3);
+  padding-right: var(--spacing-s-3);
+}
+.btn-ghost:hover { color: var(--text); }
+
+.btn-sm { padding: var(--spacing-s-2) var(--spacing-s-4); font-size: var(--text-sm); }
+.btn-lg { padding: var(--spacing-s-4) var(--spacing-s-6); font-size: var(--text-lead); }
+
+.btn-disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════
+   CARDS
+   ═══════════════════════════════════════════ */
+
+.card {
+  background: var(--card-bg, var(--surface-1));
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  padding: var(--spacing-s-6);
+  min-width: 0;
+  overflow: hidden;
+  transition:
+    transform var(--duration-normal) var(--ease),
+    border-color var(--duration-normal) var(--ease);
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-strong);
+}
+
+/* Nested cards invert again */
+.card .card {
+  background: var(--surface-1);
+}
+
+.card-title {
+  font-family: var(--font-display);
+  font-size: var(--text-h4);
+  font-weight: var(--weight-book);
+  margin-bottom: var(--spacing-s-2);
+}
+
+.card-body {
+  font-size: var(--text-sm);
+  color: var(--text-2);
+  line-height: var(--leading-norm);
+}
+
+.card-wing { border-left: 3px solid; }
+.card-wing-tinted { background: var(--surface-2); }
+
+/* Accent card — wing hue → ink gradient */
+.card-accent {
+  --accent-hue: var(--color-indigo);
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--accent-hue) 72%, var(--color-paper-2)),
+    color-mix(in srgb, var(--accent-hue) 32%, var(--color-ink))
+  );
+  border: none;
+  color: var(--color-paper);
+}
+
+.card-accent .card-title,
+.card-accent .card-body { color: var(--color-paper); }
+.card-accent .card-body { opacity: 0.9; }
+.card-accent:hover { transform: none; }
+
+/* ═══════════════════════════════════════════
+   TAGS
+   ═══════════════════════════════════════════ */
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-s-2);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-med);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-2);
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  padding: var(--spacing-s-1) var(--spacing-s-3);
+}
+
+.tag-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+}
+
+/* ═══════════════════════════════════════════
+   FORMS
+   ═══════════════════════════════════════════ */
+
+.field { margin-bottom: var(--spacing-s-5); }
+
+.label {
+  display: block;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-med);
+  color: var(--text);
+  margin-bottom: var(--spacing-s-2);
+}
+
+.input,
+.textarea,
+.select {
+  width: 100%;
+  font-family: var(--font-text);
+  font-size: var(--text-body);
+  color: var(--text);
+  background: var(--surface-1);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  padding: var(--spacing-s-3) var(--spacing-s-4);
+  transition:
+    border-color var(--duration-quick) var(--ease),
+    background var(--duration-quick) var(--ease);
+}
+
+.input:focus,
+.textarea:focus,
+.select:focus {
+  outline: none;
+  border-color: var(--text);
+}
+
+.input::placeholder { color: var(--text-3); }
+
+.hint {
+  font-size: var(--text-xs);
+  color: var(--text-3);
+  margin-top: var(--spacing-s-2);
+}
+
+/* ═══════════════════════════════════════════
+   LAYOUT HELPERS
+   ═══════════════════════════════════════════ */
+
+.section {
+  padding: var(--spacing-s-8) 0;
+  background: var(--surface-1);
+}
+
+.page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: var(--spacing-s-7) clamp(var(--spacing-s-5), 5vw, var(--spacing-s-7));
+}
+
+.rainbow-line {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    var(--color-clay), var(--color-amber), var(--color-gold),
+    var(--color-sage), var(--color-slate), var(--color-indigo), var(--color-plum)
+  );
+  opacity: 0.7;
+  border: none;
+}

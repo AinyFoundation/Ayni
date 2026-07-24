@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%sveltekit.assets%/favicon.ico" />
+    <link rel="apple-touch-icon" href="%sveltekit.assets%/apple-touch-icon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Preload the hero image so it starts fetching before CSS/JS parse.
+         imagesrcset/imagesizes make the preload responsive-aware so the
+         browser fetches the same variant the <img> will use (no double-download). -->
+    <link
+      rel="preload"
+      as="image"
+      fetchpriority="high"
+      imagesrcset="/images/main_sanctuary-768.webp 768w, /images/main_sanctuary-1920.webp 1920w, /images/main_sanctuary.webp 2558w"
+      imagesizes="100vw"
+    />
+    <!-- Warm the connection to the icon CDN early; the script itself is
+         deferred so it never blocks first paint (icons upgrade after parse). -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <script defer src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
+    %sveltekit.head%
+  </head>
+  <body data-sveltekit-preload-data="hover">
+    <div style="display: contents">%sveltekit.body%</div>
+  </body>
+</html>

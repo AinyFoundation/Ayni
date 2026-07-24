@@ -1,0 +1,74 @@
+/* Ayni — Global Styles
+ * Imports the entire design system. This is the single entry point.
+ */
+
+@import './design/tokens.css';
+@import './design/fonts.css';
+@import './design/typography.css';
+@import './design/animations.css';
+@import './design/components.css';
+
+/* ═══════════════════════════════════════════
+   GLOBAL RESETS
+   ═══════════════════════════════════════════ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  /* scroll-behavior: smooth removed — fights scroll-driven animations on Safari */
+}
+
+body {
+  font-family: var(--font-text);
+  font-size: var(--text-body);
+  line-height: var(--leading-norm);
+  color: var(--text);
+  background: var(--surface-1);
+  font-weight: var(--weight-book);
+  font-kerning: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Text selection */
+::selection {
+  background: var(--color-gold-t);
+  color: var(--color-ink);
+}
+
+/* Focus visible — global default */
+:focus-visible {
+  outline: 2px solid var(--ring-focus);
+  outline-offset: 2px;
+}
+
+/* Skip link */
+.skip-link {
+  position: fixed;
+  top: -100%;
+  left: var(--spacing-s-4);
+  padding: var(--spacing-s-2) var(--spacing-s-4);
+  background: var(--color-ink);
+  color: var(--color-paper);
+  border-radius: 0 0 var(--radius) var(--radius);
+  z-index: 9999;
+  font-family: var(--font-text);
+  font-size: var(--text-sm);
+  text-decoration: none;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+/* Links */
+a {
+  color: inherit;
+  text-decoration: none;
+}

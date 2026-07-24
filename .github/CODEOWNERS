@@ -1,0 +1,57 @@
+# CODEOWNERS
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+#
+# This file is the authoritative source for code review routing.
+# The `docs-suggest.yml` workflow reads this file and suggests reviewers
+# on PRs that touch the paths listed here. Update this file directly;
+# do not embed a copy in any other document.
+#
+# Convention: AyniCollective uses GitHub Teams for ownership.
+# Each team maps to a role described in CONTRIBUTING.md.
+# The repository owner must create the teams listed below in the
+# GitHub organization settings before CODEOWNERS enforcement activates.
+# Until teams exist, GitHub silently ignores unmatched rules and the
+# `docs-suggest.yml` workflow falls back to shell-only matching.
+
+# Default owners for everything not explicitly listed below.
+/                              @ayni-collective/founders
+
+# Governance — only founders may change the constitution or its companion files.
+AGENTS.md                      @ayni-collective/founders
+CLAUDE.md                      @ayni-collective/founders
+HANDOFF.md                     @ayni-collective/founders
+CONTEXT.md                     @ayni-collective/founders
+README.md                      @ayni-collective/founders
+CONTRIBUTING.md                @ayni-collective/founders
+CODE_OF_CONDUCT.md             @ayni-collective/founders
+SECURITY.md                    @ayni-collective/founders
+LICENSE                        @ayni-collective/founders
+
+# Architecture — research, ADRs, and design docs.
+/docs/adr/                     @ayni-collective/architecture
+/docs/research/                @ayni-collective/architecture
+/docs/design/                  @ayni-collective/architecture
+
+# Skills — each skill's author owns that skill's content and scripts.
+# Add a new line per skill, mapping to the skill's maintainer team.
+/.agents/skills/research-topic/SKILL.md  @ayni-collective/skills-research-topic
+/.agents/skills/tdd/SKILL.md             @ayni-collective/skills-tdd
+/.agents/skills/ponytail/SKILL.md         @ayni-collective/skills-ponytail
+/.agents/skills/code-quality/SKILL.md     @ayni-collective/skills-code-quality
+/.agents/skills/gold-standard/SKILL.md   @ayni-collective/skills-gold-standard
+/.agents/skills/planning-philosophy/SKILL.md  @ayni-collective/skills-planning
+
+# CI — workflows and OSS gate configuration.
+/.github/workflows/            @ayni-collective/ci-maintainers
+/.github/workflows/docs-suggest.yml  @ayni-collective/ci-maintainers
+/.github/workflows/oss-gate.yml     @ayni-collective/ci-maintainers
+/.github/CODEOWNERS            @ayni-collective/founders  # meta — founders may change ownership routing
+/.github/ISSUE_TEMPLATE/       @ayni-collective/founders
+/.github/PULL_REQUEST_TEMPLATE.md  @ayni-collective/founders
+
+# Future code paths (declared in research docs). Uncomment when the
+# corresponding code directory is created.
+# /src/                         @ayni-collective/engineering
+# /src-tauri/                   @ayni-collective/engineering
+# /infra/nix/                   @ayni-collective/infra
+# /infra/meshtastic-module/     @ayni-collective/infra

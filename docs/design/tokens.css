@@ -1,0 +1,134 @@
+/* Ayni Design System — Tokens
+ * Primitive (raw values) + Semantic (role mappings).
+ * Loaded by both design-system.html and components.html.
+ * Edit values here, both pages pick them up.
+ */
+
+@layer primitives, semantic, components;
+
+@layer primitives {
+      :root {
+        /* ── Paper — only two ── */
+        --paper:     #F1E7D4;   /* base surface */
+        --paper-2:   #EADBC0;   /* elevated */
+
+        /* ── Ink — only two ── */
+        --ink:       #221c14;   /* primary text */
+        --ink-2:     #422E21;   /* muted text */
+
+        /* ── Hairlines ── */
+        --line:      #e3dccc;
+        --line-2:    #cfc6b4;
+
+        /* ── Spectrum: Warm, alive, refined ── */
+        /* Enough saturation to feel like color, not gray.
+           Still dusty/earthy, never neon. */
+        --clay:    #C36A54;   /* terracotta — Sanctuary */
+        --amber:   #CF8A43;   /* burnt amber — Energy */
+        --gold:    #D4A739;   /* warm honey gold — Art */
+        --sage:    #6F9D5B;   /* living green — Wellness */
+        --slate:   #4D85B8;   /* clear blue — Learning */
+        --indigo:  #6B6DBB;   /* deep indigo — Labs */
+        --plum:    #A45796;   /* rich plum — Games */
+
+        /* Light tints for wing surfaces */
+        --clay-t:   #EAD4C1;
+        --amber-t:  #ECD9BD;
+        --gold-t:   #EDDCBB;
+        --sage-t:   #DEDCC2;
+        --slate-t:  #D8D8D0;
+        --indigo-t: #DCD3D2;
+        --plum-t:   #E4D0CA;
+
+        /* ── Rainbow trace ── */
+        --rainbow: linear-gradient(
+          90deg,
+          var(--clay), var(--amber), var(--gold),
+          var(--sage), var(--slate), var(--indigo), var(--plum)
+        );
+
+        /* ── Spacing: 8 essential stops ── */
+        --s-1:  4px;
+        --s-2:  8px;
+        --s-3:  12px;
+        --s-4:  16px;
+        --s-5:  24px;
+        --s-6:  32px;
+        --s-7:  48px;
+        --s-8:  80px;
+
+        /* ── Type ── */
+        /* Display options: 'Shippori Antique', 'The Seasons' */
+        --font-display: 'Shippori Antique', Georgia, serif;
+        --font-text:    'Inter', system-ui, sans-serif;
+        --font-mono:    'Inter', monospace;
+
+        --t-xs:    0.75rem;
+        --t-sm:    0.875rem;
+        --t-body:  1rem;
+        --t-lead:  1.25rem;
+        --t-h4:    1.5rem;
+        --t-h3:    2rem;
+        --t-h2:    2.75rem;
+        --t-h1:    4rem;
+        --t-display: 5.5rem;
+
+        --w-light:  300;
+        --w-book:   400;
+        --w-med:    500;
+        --w-semi:   600;
+
+        --lh-tight: 1.1;
+        --lh-snug:  1.3;
+        --lh-norm:  1.6;
+        --lh-loose: 1.8;
+
+        --ls-display: 0.01em;   /* slightly open: per-font research for EB Garamond / Gelasio / Noto Serif Bengali */
+        --ls-norm:   0;
+        --ls-wide:   0.04em;
+        --ls-wider:  0.12em;
+
+        /* ── Radius: two only ── */
+        --r:      8px;
+        --r-full: 9999px;
+
+        /* ── Motion ── */
+        --ease:    cubic-bezier(0.22, 1, 0.36, 1);
+        --quick:   180ms;
+        --dur:     400ms;
+      }
+    }
+
+@layer semantic {
+      :root {
+        /* Surfaces — the two papers, named by role */
+        --surface-1: var(--paper);
+        --surface-2: var(--paper-2);
+
+        /* Backgrounds (page-level) */
+        --bg:        var(--surface-1);
+        --bg-2:      var(--surface-2);
+
+        /* Text */
+        --text:      var(--ink);
+        --text-2:    var(--ink-2);
+        --text-3:    var(--ink-2);   /* same hue, opacity handles muting */
+
+        /* Borders — three tiers */
+        --border-subtle: var(--line);
+        --border-strong: var(--line-2);
+        --border-focus:  var(--ink);
+
+        /* Container inversion — a card inverts from its parent surface */
+        --card-bg-on-1: var(--surface-2);   /* card sitting on surface-1 */
+        --card-bg-on-2: var(--surface-1);   /* card sitting on surface-2 */
+
+        /* Hover / active backgrounds (opposite surface) */
+        --hover-bg-on-1: var(--surface-2);
+        --hover-bg-on-2: var(--surface-1);
+        --active-bg:     var(--border-strong);
+
+        /* Focus ring — ink, institutional */
+        --ring-focus: var(--ink);
+      }
+    }
