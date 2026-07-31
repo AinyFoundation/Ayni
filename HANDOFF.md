@@ -4,7 +4,11 @@ Session state ledger. Update at session-end.
 
 ## Current focus
 
-Clean starting point established 2026-07-24. The website is a minimal SvelteKit static site: one layout, one page, two components, one scroll util, five CSS token files. Styling is plain CSS custom properties — no CSS framework. See `README.md` for structure.
+Homepage is now a 450vh scroll-scrubbed horizontal journey (hero + WelcomePanel) followed by three vertical sections on the sanctuary-only surface: OfferingsSection (asymmetric editorial, placeholder categories One/Two/Three, accent dashes, entry-media ceremony frame with `offering-temazcal` placeholders as default), RetreatsSection (bigger quiet invitation, "Find a retreat" + "Stay with us" CTAs), and JournalStrip (compact "latest posts" strip on `--surface-1`, better `.card`-derived JournalCards with ink media top + white dots icon, seam in `JournalStrip.svelte` swaps the static array for a future `/blog` route). Vertical sections use no scroll animations and no dashes in copy. See `docs/research/sanctuary-offerings-landing/research.md` for the decisions and `docs/design/` canon.
+
+Organic background accents: shared `.natural-accent` + `.accent-contour` + `.accent-blob` classes added to `components.css` (edge-anchored, clay/line-2 hairline, hidden on mobile). The frame treatment standardised via `.entry-media` + `.entry-media-frame`, matching the WelcomePanel bungalow so both images share the same style and no drop shadows.
+
+New utility `src/lib/reveal.ts` is dormant. The vertical sections are deliberately static per user's direction; the action is kept in place as a seam for future intentional animated markers (and `[data-reveal]`/`[data-stagger]` in animations.css are its declarative hooks).
 
 ## Decisions in effect
 

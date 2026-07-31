@@ -197,6 +197,123 @@
 }
 
 /* ═══════════════════════════════════════════
+   MEDIA CEREMONY
+   The singular, reverent way an image is framed — promotes the
+   WelcomePanel "image as ceremony" treatment so any section can use it.
+   Clay-side corner + hairline ink border over a tinted ground.
+   ═══════════════════════════════════════════ */
+
+.entry-media {
+  position: relative;
+  width: 100%;
+  padding-top: var(--spacing-s-1);
+  padding-left: var(--spacing-s-1);
+}
+
+.entry-media::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--spacing-s-5);
+  height: var(--spacing-s-5);
+  border-top: 1.5px solid var(--clay);
+  border-left: 1.5px solid var(--clay);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.entry-media-frame {
+  margin: 0;
+  border: 1.5px solid var(--color-line-2);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--surface-2);
+  aspect-ratio: 4 / 3;
+}
+
+.entry-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Section eyebrow — the quiet tonal preface line above a section's
+   headline. Pairs with .eyebrow (typography.css). */
+.section-head {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-s-3);
+}
+
+.section-head::before {
+  content: '';
+  width: var(--spacing-s-6);
+  height: 1px;
+  background: var(--clay);
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════
+   ORGANIC ACCENTS
+   Subtle, minimal background shapes that echo the valley's terraces and
+   light. Decorative only, absolutely-positioned at a section's edge, hidden
+   on narrow viewports so content never competes with them. Values trace to
+   tokens, no shadows.
+   ═══════════════════════════════════════════ */
+
+.natural-accent {
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Terrace-step contour: two rounded nested walls, like terraced field
+   steps. Sits behind the edge of a section. */
+.accent-contour {
+  width: clamp(220px, 26vw, 360px);
+  height: clamp(140px, 16vw, 220px);
+}
+.accent-contour i {
+  position: absolute;
+  bottom: 0;
+  border: 1px solid var(--color-line-2);
+  border-radius: var(--radius);
+  opacity: 0.55;
+}
+.accent-contour i:nth-child(1) {
+  inset: auto 0 0 0;
+  height: clamp(60px, 7vw, 96px);
+  border-left: 1.5px solid var(--clay);
+}
+.accent-contour i:nth-child(2) {
+  bottom: 0;
+  left: clamp(28px, 3vw, 48px);
+  right: -1px;
+  height: clamp(96px, 11vw, 150px);
+  border-bottom: none;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+/* Soft tinted ground, a wide low-opacity wash that reads as light on paper. */
+.accent-blob {
+  width: clamp(260px, 34vw, 520px);
+  height: clamp(160px, 20vw, 320px);
+  border-radius: 42% 58% 55% 45% / 55% 40% 60% 45%;
+  filter: blur(10px);
+  opacity: 0.5;
+}
+
+@media (max-width: 900px) {
+  .accent-contour,
+  .accent-blob {
+    display: none;
+  }
+}
+
+/* ═══════════════════════════════════════════
    LAYOUT HELPERS
    ═══════════════════════════════════════════ */
 

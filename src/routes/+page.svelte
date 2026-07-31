@@ -1,6 +1,9 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import WelcomePanel from '$lib/components/WelcomePanel.svelte';
+  import OfferingsSection from '$lib/components/OfferingsSection.svelte';
+  import RetreatsSection from '$lib/components/RetreatsSection.svelte';
+  import JournalStrip from '$lib/components/JournalStrip.svelte';
   import ScrollDebug from '$lib/components/ScrollDebug.svelte';
   import { bindHeroScroll, subscribeHeroScroll } from '$lib/scrollDriver';
 
@@ -112,15 +115,21 @@
   <ScrollDebug />
 {/if}
 
-<section class="vertical-content">
-  <div class="content-inner">
-    <p>Content continues below...</p>
-  </div>
-</section>
+<!-- Vertical journey. Below the horizontal cinematic opener the story
+     turns vertical: Offer (the sanctuary's ceremonies) then Join (retreats
+     plus journal). The vertical sections are static; the horizontal strip
+     above is the only scrubbed choreography. See
+     docs/research/sanctuary-offerings-landing/research.md. -->
+<OfferingsSection />
+<RetreatsSection />
+<JournalStrip />
 
 <style>
+  /* 450vh = 350vh of scrollable runway. The extra length is deliberate:
+   * every scrub window in section 2 is a fraction of this distance, so
+   * the container height is the master tempo control for the reveals. */
   .scroll-container {
-    height: 350vh;
+    height: 450vh;
     position: relative;
     margin-top: -60px;
   }
@@ -209,24 +218,6 @@
     font-family: var(--font-display);
     font-size: var(--text-h2);
     color: var(--text-3);
-  }
-
-  .vertical-content {
-    min-height: 50vh;
-    background: var(--color-paper-2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .content-inner {
-    text-align: center;
-    padding: var(--spacing-s-8);
-  }
-
-  .content-inner p {
-    font-size: var(--text-lead);
-    color: var(--text-2);
   }
 
   .social-icons {
