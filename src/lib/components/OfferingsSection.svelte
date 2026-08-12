@@ -262,7 +262,7 @@
 
   .pin {
     position: sticky;
-    top: 0;
+    top: 60px;
     height: 100vh;
     /* svh, not dvh: stable minimum viewport height — no layout jump when the
      * mobile toolbar shows/hides. See +page.svelte .scroll-wrapper. */
