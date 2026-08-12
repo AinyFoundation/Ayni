@@ -35,19 +35,19 @@
 }
 
 .btn-primary {
-  background: var(--color-ink);
-  color: var(--color-paper);
+  background: var(--color-clay-s);
+  color: var(--color-ink);
 }
 .btn-primary:hover { opacity: 0.88; }
 
 .btn-secondary {
   background: transparent;
   color: var(--text);
-  border-color: var(--border-strong);
+  border-color: var(--color-clay-s);
 }
 .btn-secondary:hover {
-  border-color: var(--text);
-  background: var(--surface-2);
+  border-color: var(--color-clay);
+  background: color-mix(in srgb, var(--color-clay) 12%, transparent);
 }
 
 .btn-ghost {
@@ -56,10 +56,27 @@
   padding-left: var(--spacing-s-3);
   padding-right: var(--spacing-s-3);
 }
-.btn-ghost:hover { color: var(--text); }
+.btn-ghost:hover { color: var(--color-clay); }
 
 .btn-sm { padding: var(--spacing-s-2) var(--spacing-s-4); font-size: var(--text-sm); }
 .btn-lg { padding: var(--spacing-s-4) var(--spacing-s-6); font-size: var(--text-lead); }
+
+/* Touch targets.
+ *
+ * Keyed to the input device rather than to a width: a 44px finger is a
+ * property of the pointer, not of the viewport, so a touchscreen laptop needs
+ * this and a narrow desktop window does not. 44px is the WCAG 2.5.8 floor and
+ * Apple's long-standing minimum; Android asks for 48.
+ *
+ * Measured before this rule at 390px: the book's page controls were 32px tall
+ * and "Open in Google Maps" 42px — close enough to look fine and small enough
+ * to miss. Padding is left alone so nothing reflows; only the box grows. */
+@media (pointer: coarse) {
+  .btn,
+  .btn-sm {
+    min-height: 44px;
+  }
+}
 
 .btn-disabled {
   opacity: 0.4;
@@ -197,6 +214,172 @@
 }
 
 /* ═══════════════════════════════════════════
+   DROPDOWN
+   One appearance for every list the site pops open — the contact form's
+   reason picker, the language switcher, and anything added later.
+
+   The trigger inherits the FORM CONTROL metrics deliberately: it shares
+   `.input`'s font, padding, border, radius and transition, so a dropdown
+   standing in a column of text fields lines up with them to the pixel
+   instead of merely looking similar. Change a field metric above and the
+   dropdown follows, which is the whole reason these live in one file.
+
+   Two variants exist because a dropdown does two different jobs:
+     .dropdown-trigger              a form control — full width, labelled
+     .dropdown-trigger.is-bare      a chrome control — hugs its content,
+                                    no box, inherits `currentColor` so it
+                                    can sit on either navbar layer
+   ═══════════════════════════════════════════ */
+
+.dropdown {
+  position: relative;
+}
+
+.dropdown-trigger {
+  /* Metrics copied from `.input` on purpose — see the block comment. */
+  width: 100%;
+  font-family: var(--font-text);
+  font-size: var(--text-body);
+  color: var(--text);
+  background: var(--surface-1);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  padding: var(--spacing-s-3) var(--spacing-s-4);
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-s-3);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color var(--duration-quick) var(--ease),
+    background var(--duration-quick) var(--ease);
+}
+
+.dropdown-trigger:hover { border-color: var(--text); }
+
+.dropdown-trigger:focus-visible {
+  outline: none;
+  border-color: var(--text);
+}
+
+/* Open reads as focus, so the field does not appear to lose its place while
+   the list is covering it. */
+.dropdown-trigger[aria-expanded='true'] { border-color: var(--text); }
+
+/* The caret. Rotates rather than swapping glyphs so the direction it points
+   is the same object that was already there. */
+.dropdown-caret {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  transition: transform var(--duration-quick) var(--ease);
+}
+
+.dropdown-trigger[aria-expanded='true'] .dropdown-caret { transform: rotate(180deg); }
+
+/* Chrome variant: no box at all. Used in the header, where the control sits
+   on a photograph and takes its colour from whichever navbar layer is
+   showing — the same `currentColor` trick the nav links and the menu toggle
+   already use. */
+.dropdown-trigger.is-bare {
+  width: auto;
+  background: none;
+  border: none;
+  border-radius: 0;
+  padding: var(--spacing-s-2) var(--spacing-s-1);
+  color: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-med);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  gap: var(--spacing-s-2);
+}
+
+.dropdown-trigger.is-bare:hover,
+.dropdown-trigger.is-bare[aria-expanded='true'] {
+  border: none;
+  color: var(--color-gold);
+}
+
+/* Gold, not currentColor: over the hero this control is paper-coloured, and
+   an ink ring drawn under paper lines reads as a black box. Gold carries on
+   both grounds. Matches the menu toggle's ring for the same reason. */
+.dropdown-trigger.is-bare:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 3px;
+  border: none;
+}
+
+.dropdown-panel {
+  /* A hairline box on paper — the site's card convention, no shadow. */
+  background: var(--surface-1);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  padding: var(--spacing-s-2);
+  margin: 0;
+  list-style: none;
+  min-width: 100%;
+  max-height: 15rem;
+  overflow-y: auto;
+}
+
+.dropdown-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-s-3);
+  width: 100%;
+  font-family: var(--font-text);
+  font-size: var(--text-body);
+  color: var(--text);
+  text-align: left;
+  text-decoration: none;
+  background: none;
+  border: none;
+  border-radius: calc(var(--radius) - 2px);
+  padding: var(--spacing-s-2) var(--spacing-s-3);
+  cursor: pointer;
+  transition: background var(--duration-quick) var(--ease);
+}
+
+/* Hover and keyboard focus land on the same appearance on purpose: the
+   active option should look the same however the reader is driving. */
+.dropdown-option:hover,
+.dropdown-option.is-active {
+  background: var(--hover-bg-on-1);
+}
+
+.dropdown-option:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: -2px;
+}
+
+.dropdown-option[aria-selected='true'],
+.dropdown-option[aria-current='true'] {
+  font-weight: var(--weight-med);
+}
+
+/* The selected mark. A dot rather than a tick — the site draws no other
+   ticks, and it echoes the footer's separators. */
+.dropdown-mark {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: var(--color-gold);
+}
+
+@media (pointer: coarse) {
+  /* WCAG 2.5.8 floor, keyed to the POINTER rather than the viewport: a 44px
+     finger is a property of the input device, so a touchscreen laptop needs
+     this and a narrow desktop window does not. */
+  .dropdown-option { min-height: 44px; }
+  .dropdown-trigger.is-bare { min-height: 44px; }
+}
+
+/* ═══════════════════════════════════════════
    MEDIA CEREMONY
    The singular, reverent way an image is framed — promotes the
    WelcomePanel "image as ceremony" treatment so any section can use it.
@@ -239,23 +422,6 @@
   object-fit: cover;
 }
 
-/* Section eyebrow — the quiet tonal preface line above a section's
-   headline. Pairs with .eyebrow (typography.css). */
-.section-head {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-s-3);
-}
-
-.section-head::before {
-  content: '';
-  width: var(--spacing-s-6);
-  height: 1px;
-  background: var(--clay);
-  opacity: 0.6;
-  flex-shrink: 0;
-}
-
 /* ═══════════════════════════════════════════
    ORGANIC ACCENTS
    Subtle, minimal background shapes that echo the valley's terraces and
@@ -281,12 +447,11 @@
   bottom: 0;
   border: 1px solid var(--color-line-2);
   border-radius: var(--radius);
-  opacity: 0.55;
+  opacity: 0.4;
 }
 .accent-contour i:nth-child(1) {
   inset: auto 0 0 0;
   height: clamp(60px, 7vw, 96px);
-  border-left: 1.5px solid var(--clay);
 }
 .accent-contour i:nth-child(2) {
   bottom: 0;
@@ -297,18 +462,8 @@
   border-radius: var(--radius) var(--radius) 0 0;
 }
 
-/* Soft tinted ground, a wide low-opacity wash that reads as light on paper. */
-.accent-blob {
-  width: clamp(260px, 34vw, 520px);
-  height: clamp(160px, 20vw, 320px);
-  border-radius: 42% 58% 55% 45% / 55% 40% 60% 45%;
-  filter: blur(10px);
-  opacity: 0.5;
-}
-
 @media (max-width: 900px) {
-  .accent-contour,
-  .accent-blob {
+  .accent-contour {
     display: none;
   }
 }

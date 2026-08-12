@@ -6,3 +6,20 @@ node_modules
 /.env
 /.env.*
 !.env.example
+
+# Blog image derivatives and their cache. Generated from the sources in
+# src/content/blog/<slug>/ by scripts/blog-images.mjs on prebuild/predev.
+/static/_blog
+/.blog-images.json
+
+# Raw OpenStreetMap responses cached by scripts/build-valley-map.py so reruns
+# don't hammer Overpass. The geometry that ships is the generated block inside
+# ValleyMap.svelte, not this; delete it freely.
+/scripts/.cache
+
+# Python bytecode
+__pycache__/
+*.pyc
+
+# Large drop files (source images, screen recordings)
+.orca/drops/

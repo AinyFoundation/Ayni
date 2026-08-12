@@ -27,6 +27,8 @@ A project constitution for AI agents working in this repository. The project's d
 | `code-quality` | Surgical edits, blast-radius, behavior-focused tests. |
 | `gold-standard` | Project coding standard. Universal principles apply to every project. Stack-specific rules live in the marked section at the bottom and are filled in when the project adopts a toolchain. |
 | `ponytail` | YAGNI pre-write check. The 7-rung ladder asks: does this need to exist? Is it already in the codebase? Does stdlib do it? Is there a one-line version? |
+| `i18n` | Any string a reader sees. Typed catalogs in `src/lib/i18n/catalogs/`, no i18n library; English is the source of record and the compiler checks every other language against it. Read before adding a string or a language. Enforced by `npm run check` (parity) and `npm run i18n:check` (hardcoded strings). |
+| `write-blog-post` | Publishing to the journal. Interviews the author, pushes back when a post has nothing first-hand in it, applies the voice rules, places at most one subtle link back to the main site. Writes `src/content/blog/<slug>/index.md`. Enforced by `npm run blog:check`. |
 
 See [`.agents/skills/README.md`](./.agents/skills/README.md) for the skill directory structure and how to add new skills.
 
@@ -58,6 +60,8 @@ Each architectural topic has exactly one canonical source. Other plans defer to 
 | Developer platform | `docs/research/developer-platform/research.md` |
 | AyniDB alternative (Option 4) | `docs/research/aynidb-exploration/research.md` |
 | Website / design system | `docs/research/design-system-minimal/research.md` |
+| Blog / content authoring / SEO | `docs/research/blog-system/research.md` |
+| Languages / i18n / multilingual SEO | `docs/research/i18n-system/research.md` |
 | Ecosystem structure / seven wings | [ADR 0003](./docs/adr/0003-seven-wings-ecosystem.md) |
 
 If a plan contradicts the canonical source, the canonical source wins. Update the canonical source first, then propagate to dependents.

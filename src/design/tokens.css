@@ -38,6 +38,18 @@
   --color-indigo-t: #DCD3D2;
   --color-plum-t: #E4D0CA;
 
+  /* Clay subtle — hue at half strength in paper, for buttons and quiet
+   * accents (color-mix, so it tracks the palette). */
+  --color-clay-s: color-mix(in srgb, var(--color-clay) 50%, var(--color-paper));
+
+  /* Clay deep — the same hue one step into shadow, for a clay GROUND that
+   * carries paper text. Measured, not chosen: paper on raw --color-clay is
+   * 3.11:1 and ink on it is 4.43:1, so the mid-tone fails WCAG AA in both
+   * directions at 14px; at 70/30 with ink it is 4.82:1 against paper. See
+   * docs/research/footer-invitation/research.md § "The colour finding".
+   * color-mix for the same reason as clay-s: it tracks the palette. */
+  --color-clay-d: color-mix(in srgb, var(--color-clay) 70%, var(--color-ink));
+
   /* ═══════════════════════════════════════════
      PRIMITIVES: Spacing (4px base, 8 stops)
      ═══════════════════════════════════════════ */
@@ -63,16 +75,41 @@
   --font-text: "Inter", system-ui, sans-serif;
   --font-mono: "Inter", monospace;
 
-  /* Type scale */
+  /* Type scale — fluid from a 320px phone to a 1280px desktop.
+   *
+   * Every heading stop is the same straight line between two fixed ends,
+   * written in the form clamp(phone, intercept + slope·vw, desktop) where
+   *
+   *     slope(vw)  = (desktop − phone) / 9.6        ← (Δ / 960px) × 100
+   *     intercept  = phone − (desktop − phone) / 3  ← the line at 0vw
+   *
+   * so each stop lands exactly on its desktop value at 1280px and is pinned
+   * there for every wider viewport. 1440px and up are therefore byte-for-byte
+   * what the old fixed scale produced; only the way down is new. Worked once,
+   * for --text-h1: Δ = 64 − 28 = 36px, slope = 36/9.6 = 3.75vw, intercept =
+   * 28 − 12 = 16px = 1rem, and 1rem + 3.75vw is 28px at 320 and 64px at 1280.
+   *
+   * The phone ends are deliberately compressed — 32/28/26/22/20/18 against a
+   * 16px body, a ratio near 1.12 where the desktop scale runs at 1.375. A
+   * 390px screen leaves a ~342px text column, and at the old fixed sizes
+   * --text-display fitted ELEVEN characters on a line there. ~20–35 characters
+   * is the honest ceiling for display type in that column: pushing headlines
+   * to the 50–75 characters that body copy wants would size them below the
+   * paragraphs they head.
+   *
+   * Ends are in rem so the scale still answers to the reader's own font size,
+   * and the vw term shrinks under browser zoom, which is what lets a page at
+   * 200% reflow instead of overflowing.
+   */
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
   --text-body: 1rem;
-  --text-lead: 1.25rem;
-  --text-h4: 1.5rem;
-  --text-h3: 2rem;
-  --text-h2: 2.75rem;
-  --text-h1: 4rem;
-  --text-display: 5.5rem;
+  --text-lead: clamp(1.125rem, 1.083rem + 0.208vw, 1.25rem);
+  --text-h4: clamp(1.25rem, 1.167rem + 0.417vw, 1.5rem);
+  --text-h3: clamp(1.375rem, 1.167rem + 1.042vw, 2rem);
+  --text-h2: clamp(1.625rem, 1.25rem + 1.875vw, 2.75rem);
+  --text-h1: clamp(1.75rem, 1rem + 3.75vw, 4rem);
+  --text-display: clamp(2rem, 0.833rem + 5.833vw, 5.5rem);
 
   /* Font weights */
   --weight-light: 300;
@@ -139,6 +176,14 @@
   --hover-bg-on-2: var(--surface-1);
   --active-bg: var(--border-strong);
 
+  /* Page shell spacing — ESTABLISHED PATTERN. The landing page opens
+   * full-bleed with the hero; every other page starts from the same
+   * distance below the sticky header and breathes the same way. A new
+   * page takes these tokens, it does not invent its own clamp(). */
+  --page-top: clamp(48px, 7vh, 88px);
+  --page-x: clamp(24px, 5vw, 80px);
+  --page-bottom: clamp(64px, 10vh, 120px);
+
   /* Focus ring — ink, institutional */
   --ring-focus: var(--color-ink);
 
@@ -159,4 +204,6 @@
   --slate-t: var(--color-slate-t);
   --indigo-t: var(--color-indigo-t);
   --plum-t: var(--color-plum-t);
+  --clay-s: var(--color-clay-s);
+  --clay-d: var(--color-clay-d);
 }

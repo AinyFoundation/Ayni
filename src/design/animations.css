@@ -5,25 +5,29 @@
 
 :root {
   /* The hero scroll easing — a 49-point linear() curve sampled from
-   * easeInOutCustom() in src/lib/scrollDriver.ts (max deviation
-   * ~0.9px across the full slide). Shared by every scroll-driven
-   * keyframe animation (panels, hero panel, navbar clip, parallax) so
-   * they all track the same progress. Used only inside
-   * @supports (animation-timeline: scroll()); the JS driver applies the
-   * exact function on the fallback path. */
-  --ease-hero: linear(0, 0.00241 2.0833%, 0.00965 4.1667%, 0.0217 6.25%, 0.03858 8.3333%, 0.06028 10.4167%, 0.08681 12.5%, 0.11815 14.5833%, 0.15432 16.6667%, 0.19531 18.75%, 0.24113 20.8333%, 0.29176 22.9167%, 0.34722 25%, 0.4075 27.0833%, 0.47261 29.1667%, 0.5 30%, 0.5177 31.25%, 0.54649 33.3333%, 0.57439 35.4167%, 0.6014 37.5%, 0.62753 39.5833%, 0.65278 41.6667%, 0.67714 43.75%, 0.70061 45.8333%, 0.7232 47.9167%, 0.7449 50%, 0.76571 52.0833%, 0.78564 54.1667%, 0.80469 56.25%, 0.82285 58.3333%, 0.84012 60.4167%, 0.85651 62.5%, 0.87201 64.5833%, 0.88662 66.6667%, 0.90035 68.75%, 0.91319 70.8333%, 0.92515 72.9167%, 0.93622 75%, 0.94641 77.0833%, 0.95571 79.1667%, 0.96413 81.25%, 0.97166 83.3333%, 0.9783 85.4167%, 0.98406 87.5%, 0.98893 89.5833%, 0.99291 91.6667%, 0.99601 93.75%, 0.99823 95.8333%, 0.99956 97.9167%, 1 100%);
+   * easeInOutCustom() in src/lib/scrollDriver.ts (easeIn=0.34, ease-out
+   * power=2.6 — tuned so the ending settles sooner instead of dragging).
+   * Shared by every scroll-driven keyframe animation (panels, hero panel,
+   * navbar clip, parallax) so they all track the same progress. Used only
+   * inside @supports (animation-timeline: scroll()); the JS driver
+   * applies the exact function on the fallback path. Regenerate this
+   * sampling any time easeInOutCustom()'s parameters change. */
+  --ease-hero: linear(0, 0.00188 2.0833%, 0.00751 4.1667%, 0.0169 6.25%, 0.03004 8.3333%, 0.04693 10.4167%, 0.06758 12.5%, 0.09199 14.5833%, 0.12015 16.6667%, 0.15206 18.75%, 0.18773 20.8333%, 0.22715 22.9167%, 0.27033 25%, 0.31726 27.0833%, 0.36795 29.1667%, 0.42239 31.25%, 0.48058 33.3333%, 0.52743 35.4167%, 0.56605 37.5%, 0.60266 39.5833%, 0.63731 41.6667%, 0.67003 43.75%, 0.70087 45.8333%, 0.72987 47.9167%, 0.75707 50%, 0.78252 52.0833%, 0.80626 54.1667%, 0.82833 56.25%, 0.84878 58.3333%, 0.86766 60.4167%, 0.88502 62.5%, 0.90089 64.5833%, 0.91535 66.6667%, 0.92842 68.75%, 0.94018 70.8333%, 0.95066 72.9167%, 0.95993 75%, 0.96804 77.0833%, 0.97506 79.1667%, 0.98103 81.25%, 0.98604 83.3333%, 0.99013 85.4167%, 0.99339 87.5%, 0.99589 89.5833%, 0.9977 91.6667%, 0.99891 93.75%, 0.99962 95.8333%, 0.99994 97.9167%, 1 100%);
 }
 
 /* Reduced motion — respect user preference.
- * Exception: the hero's scroll-driven animations re-assert
+ * Exception 1: the hero's scroll-driven animations re-assert
  * `animation-duration: auto` in their own components — a zero duration
  * would snap a scroll-linked animation to its end state, and the
  * scroll-mapped slide is user-driven motion (kept on both the CSS and
- * the JS fallback path). */
+ * the JS fallback path).
+ * Exception 2: `html.motion-forced` (dev-only, set via ?motion=1 — see
+ * scrollDriver.ts) lifts this gate so motion can be tuned without
+ * toggling OS accessibility settings. */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  html:not(.motion-forced) *,
+  html:not(.motion-forced) *::before,
+  html:not(.motion-forced) *::after {
     animation-duration: 0s !important;
     animation-delay: 0s !important;
     transition-duration: 0s !important;

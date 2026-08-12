@@ -8,31 +8,34 @@
    *
    *   hero p     eased progress the driver is emitting (0 → 1)
    *   scrollY    window scroll position
-   *   section 2  armed = hidden states live · IS-IN = reveal fired
+   *   section 2  live scrub values (terrace line draw % · title opacity)
    *   env        reduced-motion flag · css scroll-driven support
    *
    * Reads once per driver emit, writes textContent directly — no reactive
    * churn, same discipline as the rest of the scroll architecture.
    */
   import { onMount } from 'svelte';
-  import { subscribeHeroScroll, cssScrollDriven } from '$lib/scrollDriver';
+  import { subscribeHeroScroll, cssScrollDriven, motionForced } from '$lib/scrollDriver';
 
   let elP: HTMLElement;
   let elScroll: HTMLElement;
   let elState: HTMLElement;
 
   let reduced = $state(false);
+  let forced = $state(false);
 
   onMount(() => {
     reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    forced = motionForced();
 
     return subscribeHeroScroll((p) => {
       elP.textContent = p.toFixed(3);
       elScroll.textContent = `${Math.round(window.scrollY)}px`;
-      const cls = document.querySelector('.welcome')?.classList;
-      const armed = cls?.contains('is-armed') ?? false;
-      const isIn = cls?.contains('is-in') ?? false;
-      elState.textContent = `${armed ? 'armed' : 'UNARMED'} · ${isIn ? 'IS-IN' : 'hidden'}`;
+      const path = document.querySelector('.terraces path');
+      const title = document.querySelector('.welcome-title');
+      const dash = path ? parseFloat(getComputedStyle(path).strokeDashoffset) : 0;
+      const titleO = title ? parseFloat(getComputedStyle(title).opacity) : 0;
+      elState.textContent = `lines ${Math.round((1 - dash) * 100)}% · title ${Math.round(titleO * 100)}%`;
     });
   });
 </script>
@@ -45,7 +48,7 @@
   <span class="label">section 2</span>
   <span class="val" bind:this={elState}>—</span>
   <span class="label">env</span>
-  <span class="val">{reduced ? 'REDUCED-MOTION ⚠' : 'motion ok'} · {cssScrollDriven ? 'css-sda' : 'js driver'}</span>
+  <span class="val">{reduced ? (forced ? 'reduced-motion → FORCED ON' : 'REDUCED-MOTION ⚠') : 'motion ok'} · {cssScrollDriven ? 'css-sda' : 'js driver'}</span>
 </div>
 
 <style>

@@ -1,0 +1,44 @@
+name: blog-check
+
+# Post contract and voice rules. Deliberately NOT folded into oss-gate.yml:
+# that workflow states "no language assumption, no runtime deps" and is a pure
+# shell gate. This one needs node, so it lives on its own and only runs when
+# blog content or the checker itself changes.
+
+on:
+  pull_request:
+    paths:
+      - 'src/content/blog/**'
+      - 'src/content/topics.js'
+      - 'src/content/authors.js'
+      - 'src/lib/blog/schema.js'
+      - 'scripts/blog-check.mjs'
+      - '.github/workflows/blog-check.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'src/content/blog/**'
+      - 'src/content/topics.js'
+      - 'src/content/authors.js'
+      - 'src/lib/blog/schema.js'
+      - 'scripts/blog-check.mjs'
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Check posts
+        run: npm run blog:check

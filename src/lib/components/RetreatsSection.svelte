@@ -8,36 +8,37 @@
    * See docs/research/sanctuary-offerings-landing.
    */
 
+  import { t, DEFAULT_LOCALE } from '$lib/i18n';
+
+  /* $derived, not a plain const: the locale is a property of the URL and
+   * becomes dynamic in Phase 3, at which point this recomputes on its own. */
+  const m = $derived(t(DEFAULT_LOCALE).home.retreats);
+
   /** Destinations for the calls to action. Deferred routes, swap freely. */
   export const findRetreatHref = '/retreats';
   export const stayHref = '/stay';
 </script>
 
-<section class="retreats" aria-labelledby="retreats-heading">
-  <hr class="rainbow-line retreats-rule" aria-hidden="true" />
-  <span class="natural-accent accent-contour accent-contour-bl" aria-hidden="true"><i></i><i></i></span>
-  <span class="natural-accent accent-blob accent-blob-er" aria-hidden="true"></span>
+<!-- The rainbow-line rule that used to open this section was replaced by
+     the PatternDivider seam rendered above it in +page.svelte. -->
+<section class="retreats" id="retreats" aria-labelledby="retreats-heading">
+  <span class="natural-accent accent-contour accent-contour-tr" aria-hidden="true"><i></i><i></i></span>
 
   <div class="retreats-inner">
-    <p class="section-head eyebrow retreats-eyebrow">
-      <span>Come to the Valley</span>
-    </p>
-
     <h2 id="retreats-heading" class="display retreats-headline">
-      Sit with us, for a while.
+      {m.headline}
     </h2>
 
     <p class="body-text retreats-body">
-      We open the valley for a small number of retreats each season; ceremonies,
-      good food, and long quiet days on the land.
+      {m.body}
     </p>
 
     <div class="retreats-ctas">
-      <a class="btn btn-secondary btn-lg" href={findRetreatHref}>Find a retreat</a>
-      <a class="btn btn-secondary btn-lg" href={stayHref}>Stay with us</a>
+      <a class="btn btn-secondary btn-lg" href={findRetreatHref}>{m.findRetreat}</a>
+      <a class="btn btn-secondary btn-lg" href={stayHref}>{m.stay}</a>
     </div>
 
-    <p class="small retreats-note">Small groups, kept personal.</p>
+    <p class="small retreats-note">{m.note}</p>
   </div>
 </section>
 
@@ -45,13 +46,9 @@
   .retreats {
     position: relative;
     overflow: hidden;
-    background: var(--surface-2);
-  }
-
-  .retreats-rule {
-    margin: 0;
-    position: relative;
-    z-index: 1;
+    background: var(--surface-1);
+    /* Cleared for the sticky header when the nav jumps to /#retreats. */
+    scroll-margin-top: 60px;
   }
 
   .retreats-inner {
@@ -59,16 +56,38 @@
     z-index: 1;
     max-width: 880px;
     margin-inline: auto;
-    padding: clamp(96px, 20vh, 200px) clamp(24px, 5vw, 80px);
+    /* Reduced from 12.5vw (200px cap) — the invitation is short enough
+     * that the old air dwarfed the content. 6vw gives ~86px on 1440, ~53px
+     * on 390, and a 96px cap from 1600px up — generous but not cavernous. */
+    padding: clamp(40px, 6vw, 96px) clamp(24px, 5vw, 80px);
     text-align: center;
   }
 
+  /* 6vw is what min(--text-display, 6vw) always resolved to — the token only
+   * wins above ~8000px — and it is also what keeps the invitation on one
+   * line: the line is ~8.5em wide against an 880px measure, so tying size to
+   * the viewport makes the two track each other at every desktop width.
+   *
+   * The floor is the new part. Below ~600px 6vw would take the headline under
+   * the body copy it introduces, so it stops at the scale's own display
+   * floor. (The old rule instead JUMPED to --text-h1 at 900px, which is how a
+   * sixteen-character invitation ended up at 64px and eleven characters
+   * per line on a phone.) */
   .retreats-headline {
-    font-size: var(--text-display);
+    font-size: clamp(2.25rem, 6vw, var(--text-display));
     font-weight: var(--weight-light);
     line-height: var(--leading-tight);
     letter-spacing: var(--tracking-display);
     margin: 0;
+  }
+
+  /* nowrap only while the vw term is driving. Once the size stops tracking
+   * the viewport the box keeps shrinking under a fixed line, and nowrap
+   * would push it off a 320px screen rather than wrap it. */
+  @media (min-width: 601px) {
+    .retreats-headline {
+      white-space: nowrap;
+    }
   }
 
   .retreats-body {
@@ -91,21 +110,14 @@
     opacity: 0.8;
   }
 
-  /* Organic accents: a terrace contour anchors the lower-left, a soft warm
-   * wash rises on the right. Decorative, hidden on mobile. */
-  .retreats .accent-contour-bl {
-    bottom: calc(-1 * var(--spacing-s-5));
-    left: 5%;
-  }
-  .retreats .accent-blob-er {
-    top: 8%;
-    right: calc(-1 * var(--spacing-s-6));
-    background: var(--clay-t);
-  }
-
-  @media (max-width: 900px) {
-    .retreats-inner { padding: var(--spacing-s-8) clamp(24px, 6vw, 48px); }
-    .retreats-headline { font-size: var(--text-h1); }
+  /* Organic accent: a terrace contour hangs from the top edge. Together
+   * with the journal's bottom-left contour below, the two frame the
+   * invitation + journal as ONE page (they share --surface-1 now) instead
+   * of decorating their join. Decorative, hidden on mobile. */
+  .retreats .accent-contour-tr {
+    top: calc(-1 * var(--spacing-s-4));
+    right: 7%;
+    transform: scaleY(-1);
   }
 
   @media (max-width: 520px) {

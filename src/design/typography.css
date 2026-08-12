@@ -69,3 +69,18 @@
   text-transform: uppercase;
   color: var(--text-3);
 }
+
+/* Desktop: section titles hold a single line. The measure is wide enough
+ * for every current title, and a wrapped headline reads as a layout
+ * accident rather than a paragraph — so the layout says one line and the
+ * copy is written to honour it. Mobile keeps wrapping (narrow screens
+ * come first). */
+@media (min-width: 901px) {
+  .copy-title,
+  .journal-title,
+  .voices-title,
+  .contact-title,
+  .index-title {
+    white-space: nowrap;
+  }
+}

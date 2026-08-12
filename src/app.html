@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="%lang%">
   <head>
     <meta charset="utf-8" />
     <link rel="icon" href="%sveltekit.assets%/favicon.ico" />
@@ -15,10 +15,86 @@
       imagesrcset="/images/main_sanctuary-768.webp 768w, /images/main_sanctuary-1920.webp 1920w, /images/main_sanctuary.webp 2558w"
       imagesizes="100vw"
     />
-    <!-- Warm the connection to the icon CDN early; the script itself is
-         deferred so it never blocks first paint (icons upgrade after parse). -->
-    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
-    <script defer src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
+    <!-- Scroll-reveal starts content at opacity 0 and the IntersectionObserver
+         action in src/lib/reveal.ts is what turns it on. Without JavaScript
+         that action never runs, so a revealed section would stay permanently
+         invisible — content lost, not merely unanimated. Every other section on
+         this site renders statically; this keeps the revealed ones honest too. -->
+    <noscript>
+      <style>
+        [data-reveal],
+        [data-stagger] > * {
+          opacity: 1 !important;
+          transform: none !important;
+        }
+
+        /*
+          The horizontal opener is 380vh of sticky container whose second panel
+          is reached by sliding the strip. An unmovable strip means 380vh of
+          dead scroll and a panel nobody can ever see.
+
+          Scoped to browsers that ALSO lack scroll-driven animations. Where
+          those exist the journey needs no JavaScript at all — the view-timeline
+          in +page.svelte drives the whole slide — so collapsing it here would
+          throw away a working experience over a script that was never needed.
+
+          When neither is available the journey stops pretending to be
+          horizontal: the container collapses to content height, the sticky
+          wrapper releases, and the two panels stack and read as a page. Less
+          cinematic, but nothing is lost, which is the trade the rest of this
+          site makes too.
+        */
+        @supports not (animation-timeline: view()) {
+          .scroll-container { height: auto !important; }
+          .scroll-wrapper { position: static !important; height: auto !important; overflow: visible !important; }
+          .panels { display: block !important; width: 100% !important; transform: none !important; }
+          .panel { width: 100% !important; height: auto !important; min-height: 100vh; }
+        }
+
+        /*
+          The white navbar is revealed or hidden by how much of it survives a
+          clip-path, and JavaScript is normally what moves that clip. With no
+          JS it stays fully open, so paper-coloured links sit on paper the
+          moment the journey slides off the dark hero.
+
+          These rules live here, inside <noscript>, on purpose. The same
+          animation applied unconditionally would outrank the inline clip that
+          the pattern dividers write when they pass under the header — CSS
+          animations beat inline styles — and would silently break the navbar
+          takeover. Scripting off, CSS drives it; scripting on, JS does. Never
+          both.
+
+          timeline-scope is required because the timeline is declared on the
+          page's scroll container, and the header is not one of its
+          descendants.
+        */
+        @supports (animation-timeline: view()) {
+          html { timeline-scope: --hero-strip; }
+
+          .navbar-white.on-hero {
+            animation: hero-navbar-clip auto linear both;
+            animation-timeline: --hero-strip;
+            animation-range: contain 0% contain 100%;
+            animation-timing-function: var(--ease-hero);
+          }
+
+          /* Same exemption as the strip itself: a zeroed duration pins a
+             scroll-driven animation to its END state, which here would clip
+             the white navbar away permanently. See +page.svelte. */
+          @media (prefers-reduced-motion: reduce) {
+            html:not(.motion-forced) .navbar-white.on-hero {
+              animation-duration: auto !important;
+              animation-delay: 0s !important;
+            }
+          }
+
+          @keyframes hero-navbar-clip {
+            from { clip-path: inset(0vh 0vw 0 0 round 0px); }
+            to { clip-path: inset(7.5vh 107.5vw 0 0 round 24px); }
+          }
+        }
+      </style>
+    </noscript>
     %sveltekit.head%
   </head>
   <body data-sveltekit-preload-data="hover">

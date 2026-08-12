@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="96" height="96">
+  <!-- Placeholder portrait. See placeholder-clay.svg for why these are
+       silhouettes rather than faces. Hex mirrors the design tokens
+       "color-indigo-t" (ground) and "color-indigo" (figure). -->
+  <title>Placeholder portrait</title>
+  <clipPath id="frame"><circle cx="48" cy="48" r="48" /></clipPath>
+  <g clip-path="url(#frame)">
+    <rect width="96" height="96" fill="#DCD3D2" />
+    <circle cx="48" cy="37" r="18" fill="#6B6DBB" />
+    <path d="M48 52a46 46 0 0 1 46 46H2a46 46 0 0 1 46-46Z" fill="#6B6DBB" />
+  </g>
+</svg>

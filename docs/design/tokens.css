@@ -40,6 +40,9 @@
         --indigo-t: #DCD3D2;
         --plum-t:   #E4D0CA;
 
+        /* Clay subtle — hue at half strength in paper, for buttons. */
+        --clay-s:   color-mix(in srgb, var(--clay) 50%, var(--paper));
+
         /* ── Rainbow trace ── */
         --rainbow: linear-gradient(
           90deg,
@@ -130,5 +133,11 @@
 
         /* Focus ring — ink, institutional */
         --ring-focus: var(--ink);
+
+        /* Page shell — established pattern for every subpage (the landing
+           page opens full-bleed with the hero instead). */
+        --page-top:    clamp(48px, 7vh, 88px);
+        --page-x:      clamp(24px, 5vw, 80px);
+        --page-bottom: clamp(64px, 10vh, 120px);
       }
     }

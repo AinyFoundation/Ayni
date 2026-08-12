@@ -1,64 +1,45 @@
 <script lang="ts">
   /**
    * JournalStrip — Section C of the vertical journey ("Join", part 2).
-   * A quiet strip of placeholder journal cards below the retreats invitation.
-   * Built as pure presentation so it can later be connected to a real /blog
-   * without touching this markup.
    *
-   * SEAM for /blog: replace the static `posts` array below with data from the
-   * `/blog` index route (or a shared content source) when the blog is built.
-   * JournalCard takes a typed `post` prop — keep that prop's shape and this
-   * strip is a drop-in. Nothing else here is content-specific.
+   * Shows the three newest published posts, loaded by src/routes/+page.server.ts
+   * and resolved to cards there. The static placeholder array this component
+   * used to carry is gone: the seam it described is now connected.
+   *
+   * With no posts yet it does not render an empty grid — it says so, and still
+   * offers the way through to /blog.
    */
-  import JournalCard, { type JournalPost } from './JournalCard.svelte';
+  import JournalCard from './JournalCard.svelte';
+  import type { PostCard } from '$lib/blog/cards.server';
+  import { t, DEFAULT_LOCALE } from '$lib/i18n';
 
-  /** SEAM: static placeholder posts. Replace with real route data later. */
-  const posts: JournalPost[] = [
-    {
-      category: 'Farm & Food',
-      date: 'Forthcoming',
-      title: 'The mountain feeds the table',
-      excerpt:
-        'Slow mornings, open fire, and food grown steps from where it is eaten. Notes on how the valley feeds the kitchen each season.',
-    },
-    {
-      category: 'The Land',
-      date: 'Forthcoming',
-      title: 'Reading the valley',
-      excerpt:
-        'What the terraces, the weather, and the river teach us about pacing a retreat, and why the land sets the schedule here.',
-    },
-    {
-      category: 'Ceremony',
-      date: 'Forthcoming',
-      title: 'What a night asks',
-      excerpt:
-        'On arriving as you are, sitting well, and the quiet work that happens between songs. A gentle orientation to ceremony.',
-    },
-  ];
+  let { posts = [] }: { posts?: PostCard[] } = $props();
+
+  /** Copy for the strip. `$derived` so it survives the locale becoming dynamic. */
+  const m = $derived(t(DEFAULT_LOCALE).blog);
 </script>
 
 <section class="journal" aria-labelledby="journal-heading">
-  <span class="natural-accent accent-contour accent-contour-tr" aria-hidden="true"><i></i><i></i></span>
+  <span class="natural-accent accent-contour accent-contour-bl" aria-hidden="true"><i></i><i></i></span>
   <div class="journal-inner">
-    <p class="section-head eyebrow journal-eyebrow">
-      <span>Notes from the Valley</span>
-    </p>
-
     <div class="journal-head">
       <h2 id="journal-heading" class="heading-4 journal-title">
-        Field notes, forthcoming.
+        {posts.length > 0 ? m.strip.headline : m.strip.headlineEmpty}
       </h2>
-      <a class="journal-all" href="/blog">All journal entries →</a>
+      <a class="journal-all" href="/blog">{m.index.all} →</a>
     </div>
 
-    <ul class="journal-grid" role="list">
-      {#each posts as post (post.title)}
-        <li class="journal-item">
-          <JournalCard {post} />
-        </li>
-      {/each}
-    </ul>
+    {#if posts.length > 0}
+      <ul class="journal-grid" role="list">
+        {#each posts as post (post.slug)}
+          <li class="journal-item">
+            <JournalCard {post} />
+          </li>
+        {/each}
+      </ul>
+    {:else}
+      <p class="journal-empty">{m.strip.empty}</p>
+    {/if}
   </div>
 </section>
 
@@ -67,8 +48,11 @@
     position: relative;
     overflow: hidden;
     background: var(--surface-1);
-    border-top: 1px solid var(--border-subtle);
-    padding: clamp(48px, 8vh, 72px) clamp(24px, 5vw, 80px);
+    /* Slimmer than every other band on the page on purpose: this strip is a
+     * pointer to /blog, not a destination in its own right, and it now leads
+     * into the book of days rather than closing the page, so it should read
+     * as a quiet header for what follows, not a full section. */
+    padding: clamp(20px, 2.5vw, 32px) clamp(24px, 5vw, 80px);
   }
 
   .journal-inner {
@@ -78,16 +62,13 @@
     margin-inline: auto;
   }
 
-  /* Organic accent: an upside-down terrace contour hangs from the top edge,
-   * decorative and quiet. Hidden on mobile. */
-  .journal .accent-contour-tr {
-    top: calc(-1 * var(--spacing-s-4));
-    right: 7%;
-    transform: scaleY(-1);
-  }
-
-  .journal-eyebrow {
-    margin-bottom: var(--spacing-s-3);
+  /* Organic accent: a terrace contour anchors the lower-left. Together
+   * with the invitation's top-hanging contour above, the two frame the
+   * invitation + journal as ONE page (the old top border between them is
+   * gone for the same reason). Decorative, hidden on mobile. */
+  .journal .accent-contour-bl {
+    bottom: calc(-1 * var(--spacing-s-5));
+    left: 5%;
   }
 
   .journal-head {
@@ -95,7 +76,7 @@
     align-items: baseline;
     justify-content: space-between;
     gap: var(--spacing-s-5);
-    margin-bottom: var(--spacing-s-6);
+    margin-bottom: var(--spacing-s-4);
   }
 
   .journal-title {
@@ -120,10 +101,21 @@
     border-color: var(--text);
   }
 
+  /* Measured 24px tall — a single line of text with no box around it. */
+  @media (pointer: coarse) {
+    .journal-all {
+      display: inline-flex;
+      align-items: center;
+      min-height: 44px;
+    }
+  }
+
+  /* Gutter matched to the Voices grid below it. Both bands are rows of small
+     cards now, and a wider gutter here made them read as different systems. */
   .journal-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: var(--spacing-s-6);
+    gap: var(--spacing-s-4);
     list-style: none;
     margin: 0;
     padding: 0;
@@ -134,18 +126,18 @@
     display: flex;
   }
 
-  /* Cards invert on the lighter surface so each card reads as its own
-     quiet island of deeper paper within the band. */
-  .journal-item :global(.card.journal-card) {
-    width: 100%;
-    background: var(--surface-2);
-    border-color: var(--border-strong);
+  .journal-empty {
+    margin: 0;
+    max-width: 48ch;
+    font-size: var(--text-body);
+    line-height: var(--leading-loose);
+    color: var(--text-2);
   }
 
   @media (max-width: 900px) {
     .journal-grid {
       grid-template-columns: 1fr;
-      gap: var(--spacing-s-5);
+      gap: var(--spacing-s-4);
     }
     .journal-head {
       flex-direction: column;

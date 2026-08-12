@@ -27,18 +27,20 @@
    * sweeps in beneath the closing line like a brush pass.
    */
   import { onMount } from 'svelte';
-  import { subscribeHeroScroll } from '$lib/scrollDriver';
+  import { subscribeHeroScroll, navRegion } from '$lib/scrollDriver';
+  import { t, DEFAULT_LOCALE } from '$lib/i18n';
 
-  const greetings = [
-    { qu: "Allin p'unchaw", en: 'good day' },
-    { qu: 'Haykuykuy', en: 'come in' },
-    { qu: 'Urpillay sonqollay', en: 'gratitude' },
-    { qu: 'Rimaykullayki', en: 'hello' },
-    { qu: 'Napaykullayki', en: 'I greet you' },
-    { qu: 'Hamuy', en: 'welcome' },
-    { qu: 'Añay', en: 'thank you' },
-  ];
-  let greeting = $state(greetings[0]);
+  /* $derived, not a plain const: the locale is a property of the URL and
+   * becomes dynamic in Phase 3, at which point this recomputes on its own. */
+  const m = $derived(t(DEFAULT_LOCALE).home);
+
+  /* Which greeting is showing, held as an INDEX rather than as the greeting
+   * itself. The greetings now come from the catalog, and putting a catalog
+   * object into $state would deep-proxy it; an index keeps the state a number,
+   * keeps the server's first render on entry 0 exactly as before, and survives
+   * the catalog changing underneath it. */
+  let greetingIndex = $state(0);
+  const greeting = $derived(m.welcome.greetings[greetingIndex]);
 
   /* Individual DOM refs — no array-index bind:this (Svelte 5 compat) */
   let elGreeting: HTMLElement;
@@ -48,7 +50,6 @@
   let elBody2: HTMLElement;
   let elClosing: HTMLElement;
   let elDoorGlow: SVGSVGElement;
-  let elLocation: HTMLElement;
   let elImage: HTMLElement;
   let elTerraces: HTMLElement;
   let elLine1: SVGPathElement;
@@ -150,7 +151,7 @@
    *              sliver — finishes its traverse across the screen
    *              exactly as the panel lands, none ever racing off-screen
    *   0.55–0.92  copy cascade: greeting → spectrum → title → bodies →
-   *              closing → location (~0.04p apart, varied travel)
+   *              closing (~0.04p apart, varied travel)
    *   0.64–1.00  image container slides in from the right, settling
    *              leftward into its column exactly as the panel lands
    *   0.78–0.95  door rainbow sweeps in beneath the closing line
@@ -178,11 +179,10 @@
     fadeUp(elBody2,    map01(p, 0.69, 0.86), 22);
     fadeUp(elClosing,  map01(p, 0.73, 0.89), 18);
     sweepIn(elDoorGlow, map01(p, 0.78, 0.95));
-    fadeUp(elLocation, map01(p, 0.77, 0.92), 12);
   }
 
   onMount(() => {
-    greeting = greetings[Math.floor(Math.random() * greetings.length)];
+    greetingIndex = Math.floor(Math.random() * m.welcome.greetings.length);
     bars = Array.from(elSpectrum.querySelectorAll('i'));
     imgTx = Math.round(Math.min(140, Math.max(48, window.innerWidth * 0.08)));
 
@@ -209,9 +209,9 @@
       <div class="spectrum" aria-hidden="true" bind:this={elSpectrum}>
         <i style="--hue: var(--clay)"></i><i style="--hue: var(--amber)"></i><i style="--hue: var(--gold)"></i><i style="--hue: var(--sage)"></i><i style="--hue: var(--slate)"></i><i style="--hue: var(--indigo)"></i><i style="--hue: var(--plum)"></i>
       </div>
-      <h2 class="welcome-title" bind:this={elTitle}>We are happy you're here.</h2>
-      <p class="body" bind:this={elBody1}>This valley has welcomed people for generations. We're simply here to share it with you.</p>
-      <p class="body" bind:this={elBody2}>Take your time. Breathe the mountain air. Enjoy good food, quiet mornings, and the gentle rhythm of the Sacred Valley.</p>
+      <h2 class="welcome-title" bind:this={elTitle}>{m.welcome.title}</h2>
+      <p class="body" bind:this={elBody1}>{m.welcome.body1}</p>
+      <p class="body" bind:this={elBody2}>{m.welcome.body2}</p>
       <p class="closing" bind:this={elClosing}>
         <svg
           class="door-glow"
@@ -236,16 +236,13 @@
             fill="url(#door-rainbow)"
           />
         </svg>
-        The door is open.
+        {m.welcome.closing}
       </p>
-      <div class="location-strip" bind:this={elLocation}>
-        <span>Calca</span><span class="loc-dot" aria-hidden="true"></span><span>Valle Sagrado</span><span class="loc-dot" aria-hidden="true"></span><span>2,928 m</span>
-      </div>
     </div>
     <div class="welcome-image" bind:this={elImage}>
       <figure class="frame">
-        <div class="frame-inner">
-          <img src="/images/sanctuary-bungalows.webp" srcset="/images/sanctuary-bungalows-768.webp 768w, /images/sanctuary-bungalows-1280.webp 1280w, /images/sanctuary-bungalows.webp 1920w" sizes="(max-width: 900px) 90vw, 45vw" width="1920" height="1280" alt="Adobe bungalows with thatched roofs along a stone path at Ayni Sanctuary, Sacred Valley" loading="lazy" decoding="async" />
+        <div class="frame-inner" use:navRegion>
+          <img src="/images/sanctuary-bungalows.webp" srcset="/images/sanctuary-bungalows-768.webp 768w, /images/sanctuary-bungalows-1280.webp 1280w, /images/sanctuary-bungalows.webp 1920w" sizes="(max-width: 900px) 90vw, 45vw" width="1920" height="1280" alt={m.welcome.imageAlt} loading="lazy" decoding="async" />
         </div>
       </figure>
     </div>
@@ -258,8 +255,15 @@
     background: radial-gradient(130% 100% at 85% 15%, var(--clay-t) 0%, transparent 60%), var(--surface-1);
     padding: clamp(80px, 10vh, 120px) clamp(24px, 5vw, 80px) clamp(32px, 4vh, 56px);
   }
-  .terraces { position: absolute; inset: 0; pointer-events: none; will-change: transform; }
-  .terraces svg { position: absolute; left: -4%; bottom: -6%; width: 108%; height: 60%; stroke: var(--clay); stroke-width: 1; opacity: 0.18; }
+  /* overflow: hidden contains the svg below, which is deliberately hung 6%
+   * past the bottom edge so the terrace lines run off the panel rather than
+   * stopping inside it. Unclipped, that overhang counted toward the panel's
+   * scroll height — 51px of it on a 390x844 phone — which turned `.welcome`
+   * into a scrollable box on a PINNED panel: a thumb could catch 51px of
+   * decorative nothing while the page scroll it was meant to drive stalled.
+   * The lines still bleed off the edge; they just no longer invent scroll. */
+  .terraces { position: absolute; inset: 0; pointer-events: none; will-change: transform; overflow: hidden; }
+  .terraces svg { position: absolute; left: -4%; bottom: -6%; width: 108%; height: 60%; stroke: var(--clay); stroke-width: 4.5; opacity: 0.18; }
   /* Base stylesheet draws the lines — the presentation attribute
    * stroke-dashoffset="1" is only a pre-CSS guard. No-JS environments
    * see full lines; the scrub hides them again from animate(0). */
@@ -268,7 +272,7 @@
   .welcome-image { display: flex; align-items: flex-end; justify-content: flex-end; padding-bottom: 6vh; will-change: transform; }
   /* Bars grow from the left edge (see growBars) */
   .spectrum i { transform-origin: left center; }
-  .greeting, .spectrum, .welcome-title, .body, .closing, .location-strip { will-change: transform, opacity; }
+  .greeting, .spectrum, .welcome-title, .body, .closing { will-change: transform, opacity; }
   .greeting { display: flex; align-items: baseline; gap: var(--spacing-s-2); font-size: var(--text-sm); letter-spacing: var(--tracking-wider); text-transform: uppercase; }
   .greeting-qu { font-family: var(--font-display); font-size: var(--text-body); font-weight: var(--weight-book); letter-spacing: var(--tracking-norm); text-transform: none; color: var(--clay); }
   .greeting-en { color: var(--text-3); font-weight: var(--weight-med); }
@@ -283,18 +287,70 @@
    * hues at low opacity, tilted a touch so it reads as a brush stroke,
    * not a box. Revealed by the scrub (see sweepIn). */
   .door-glow { position: absolute; left: -5%; top: 6%; width: 110%; height: 88%; z-index: -1; opacity: 0.25; transform: rotate(-1.2deg); pointer-events: none; will-change: clip-path; }
-  .location-strip { display: flex; align-items: center; gap: var(--spacing-s-3); margin-top: var(--spacing-s-6); font-size: var(--text-xs); font-weight: var(--weight-med); letter-spacing: var(--tracking-wider); text-transform: uppercase; color: var(--text-3); }
-  .loc-dot { width: 4px; height: 4px; border-radius: var(--radius-full); background: var(--clay); opacity: 0.6; }
   .frame { margin: 0; width: 100%; }
   .frame-inner { border: 1.5px solid var(--clay); border-radius: var(--radius); overflow: hidden; background: var(--clay-t); aspect-ratio: 4 / 3; }
   .frame-inner img { display: block; width: 100%; height: 100%; object-fit: cover; }
 
+  /* ── Phone ────────────────────────────────────────────────────────
+   *
+   * This panel is the second half of a pinned, scroll-driven strip, so it gets
+   * exactly one viewport and no more. Measured at 390×844 it wanted 895px —
+   * 51px past the panel — and `.welcome`'s own overflow silently ate the
+   * difference: the closing line and the location strip were simply gone, and
+   * the panel's internal scrollbar competed with the page scroll that drives
+   * the slide.
+   *
+   * So the content is made to FIT rather than allowed to spill. The image is
+   * the elastic part: capping it in vh lets it yield on short screens instead
+   * of pushing the words out of the panel, which is the right order of
+   * sacrifice for a panel whose job is what it says. overflow-y stays `auto`
+   * as a floor under unusually large text settings, but at default sizes there
+   * is now nothing to scroll and nothing for a thumb to catch on.
+   */
   @media (max-width: 900px) {
-    .welcome { overflow-y: auto; overflow-x: hidden; padding-top: 88px; } /* x-hidden clips the from-right slide */
-    .welcome-grid { grid-template-columns: 1fr; gap: var(--spacing-s-7); padding-block: var(--spacing-s-4) var(--spacing-s-7); }
+    .welcome { overflow-y: auto; overflow-x: hidden; padding-top: 76px; } /* x-hidden clips the from-right slide */
+    /* minmax(0, 1fr), not 1fr: a plain 1fr is min-content-floored, so the
+     * nowrap title below stretched the column past the panel at 320px. */
+    .welcome-grid {
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--spacing-s-5);
+      padding-block: var(--spacing-s-3) var(--spacing-s-5);
+      align-content: center;
+    }
     .welcome-image { padding-bottom: 0; }
-    .frame-inner { aspect-ratio: 16 / 9; }
+    .frame-inner {
+      aspect-ratio: 3 / 2;
+      /* svh, not dvh: stable viewport height — no jump when toolbar shows/hides. */
+      max-height: 32svh;
+    }
+    /* Let it wrap. The desktop rule keeps the invitation on one line because
+     * the column is wide enough to hold it; on a phone that promise can only
+     * be kept by overflowing the panel, and a wrapped heading beats a clipped
+     * one. */
+    .welcome-title {
+      white-space: normal;
+    }
+    .body { margin-top: var(--spacing-s-4); }
+    .closing { margin-top: var(--spacing-s-5); }
   }
-  @media (max-height: 700px) { .welcome { padding-top: 72px; } }
+  /* Short viewports. The panel gets one screen whatever its height, so on a
+   * 640px-tall phone the picture yields before the words do. */
+  @media (max-height: 700px) {
+    .welcome { padding-top: 68px; }
+    .frame-inner { max-height: 22svh; }
+    .welcome-grid { gap: var(--spacing-s-4); }
+  }
+
+  /* Shorter still (a 320x568 phone is the smallest worth targeting): the
+   * photograph goes entirely. It is the one element here that repeats
+   * something the page shows elsewhere, and keeping it would mean scrolling a
+   * pinned panel to reach the invitation it illustrates. */
+  @media (max-width: 900px) and (max-height: 600px) {
+    .welcome-image {
+      display: none;
+    }
+    .welcome { padding-top: 60px; }
+    .closing { margin-top: var(--spacing-s-4); }
+  }
 
 </style>
