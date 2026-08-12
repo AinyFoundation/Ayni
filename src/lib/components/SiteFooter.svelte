@@ -62,7 +62,6 @@
    * in which destinations they list — never in what a destination is called. */
   const links: NavLink[] = [
     { href: '/#offerings', key: 'offerings' },
-    { href: '/#retreats', key: 'retreats' },
     { href: '/#book', key: 'book' },
     { href: '/blog', key: 'journal' },
     { href: '/#contact', key: 'visit' },

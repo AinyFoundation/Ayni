@@ -76,7 +76,6 @@ const error = {
   actions: {
     home: { label: 'Return home', href: '/' },
     offerings: { label: 'See offerings', href: '/#offerings' },
-    retreats: { label: 'Find a retreat', href: '/#retreats' },
     journal: { label: 'Read the journal', href: '/blog' },
     contact: { label: 'Write to us', href: '/#contact' }
   },

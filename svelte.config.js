@@ -17,7 +17,6 @@ const PLANNED_ROUTES = new Set([
   '/about',
   '/community',
   '/sanctuary',
-  '/retreats',
   '/stay'
 ]);
 
