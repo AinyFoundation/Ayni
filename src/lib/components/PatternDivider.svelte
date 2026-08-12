@@ -91,6 +91,8 @@
 
 <style>
   .pattern-divider {
+    position: relative;
+    z-index: 6;
     overflow: hidden;
     line-height: 0;
     border-top: 4px solid var(--color-ink);
