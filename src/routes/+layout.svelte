@@ -11,6 +11,9 @@
     subscribeNavRegions,
     motionForced,
     HEADER_H,
+    bindNavbarColor,
+    subscribeNavbarColor,
+    heroReachedEnd,
     type NavRegion,
   } from '$lib/scrollDriver';
   import { blogEntry } from '$lib/blogNav.svelte';
@@ -21,6 +24,7 @@
    * and a plain binding is not reactive in runes mode, so the parking effect
    * below would run once against `undefined` and never re-run. */
   let navbarWhiteEl: HTMLElement | undefined = $state();
+  let navbarBlackEl: HTMLElement | undefined = $state();
   let welcomeVisible = $state(false);
   /** Threshold for hero progress at which the WelcomePanel has arrived. */
   const WELCOME_THRESHOLD = 0.85;
@@ -141,6 +145,12 @@
       sectionClip = null;
       clipRects = [];
       applyClip();
+      // Clear the section colour tracker's inline styles — CSS
+      // (e.g. .on-blog) takes over on non-home routes.
+      if (navbarBlackEl) {
+        navbarBlackEl.style.background = '';
+        navbarBlackEl.classList.remove('dark-bg');
+      }
     }
   });
 
@@ -164,6 +174,8 @@
       heroClip = `inset(${topInset}vh ${rightInset}vw 0 0 round ${radius}px)`;
       if (sectionClip === null) applyClip();
       welcomeVisible = p >= WELCOME_THRESHOLD;
+      // Navbar background is managed entirely by the section colour
+      // tracker in scrollDriver.ts — no direct writes here.
     });
 
     const unsubNav = subscribeNavRegions((regions) => {
@@ -171,9 +183,27 @@
       applyClip();
     });
 
+    // Section-based navbar color: matches the background of whatever
+    // section sits under the sticky header.
+    const unbindNavColor = bindNavbarColor();
+    const unsubNavColor = subscribeNavbarColor((color) => {
+      if (!navbarBlackEl) return;
+      navbarBlackEl.style.background = color;
+      // Toggle text/logo colors based on section luminance.
+      const isDark = (() => {
+        const m = color.match(/\d+/g);
+        if (!m || m.length < 3) return false;
+        const [r, g, b] = m.map(Number);
+        return (0.299 * r + 0.587 * g + 0.114 * b) / 255 < 0.5;
+      })();
+      navbarBlackEl.classList.toggle('dark-bg', isDark);
+    });
+
     return () => {
       unsubHero();
       unsubNav();
+      unbindNavColor();
+      unsubNavColor();
     };
   });
 </script>
@@ -197,7 +227,7 @@
 
 <header class="site-header" class:on-blog={isBlog} class:on-welcome={welcomeVisible && isHome}>
   <!-- Black navbar — always visible, underneath -->
-  <div class="navbar navbar-black">
+  <div class="navbar navbar-black" bind:this={navbarBlackEl}>
     <div class="header-inner">
       <NavContent>
         <!-- The full lockup at every width, wordmark included. Swapping in the
@@ -351,18 +381,21 @@
     clip-path: inset(0 100% 0 0) !important;
   }
 
-  /* ── Homepage: solid background once WelcomePanel arrives ── */
-  .on-welcome .navbar-black {
-    background: var(--surface-1);
-    color: var(--text);
-  }
-
-  .on-welcome .navbar-black :global(.logo-img) {
-    filter: none;
-  }
-
+  /* ── Homepage: hide white navbar once WelcomePanel arrives ── */
   .on-welcome .navbar-white {
     clip-path: inset(0 100% 0 0) !important;
+  }
+
+  /* ── Dark section background: light text + inverted logo ──
+   *  Toggled by the section colour tracker (JS) when the navbar
+   *  sits over a dark-background section. :global() because the
+   *  class is toggled by JS, not in the template. */
+  :global(.navbar-black.dark-bg) {
+    color: var(--color-paper);
+  }
+
+  :global(.navbar-black.dark-bg .logo-img) {
+    filter: invert(1);
   }
 
   /* `invert(1)` alone — the mark is drawn in ink and this layer is the paper

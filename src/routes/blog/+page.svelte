@@ -317,7 +317,6 @@
   }
 
   .index-head {
-    max-width: 62ch;
     margin-bottom: clamp(28px, 4vh, 44px);
   }
 
@@ -327,10 +326,10 @@
   }
 
   /* Kept quiet on purpose: one step below the title in size and weight,
-   * not a second headline. */
+   * not a second headline. Constrained to two lines at most on desktop. */
   .index-lead {
     margin: 0;
-    max-width: 52ch;
+    max-width: 68ch;
     font-size: var(--text-body);
     line-height: var(--leading-norm);
   }

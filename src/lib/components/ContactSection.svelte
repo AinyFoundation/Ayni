@@ -74,7 +74,7 @@
   }
 </script>
 
-<section class="contact" id="contact" aria-labelledby="contact-heading">
+<section class="contact" id="contact" data-nav-bg="#EADBC0" aria-labelledby="contact-heading">
   <div class="contact-inner">
     <div class="contact-form-col">
       <h2 id="contact-heading" class="heading-2 contact-title">{m.title}</h2>

@@ -75,7 +75,7 @@
 <!-- No terrace accent here on purpose: this section's generous bottom padding
      left the contour floating mid-air instead of hugging an edge, which is the
      only way it reads as quiet. Retreats and Journal keep theirs. -->
-<section class="voices" aria-labelledby="voices-heading">
+<section class="voices" data-nav-bg="#F1E7D4" aria-labelledby="voices-heading">
   <div class="voices-inner">
     <p class="section-head eyebrow voices-eyebrow">
       <span>{m.eyebrow}</span>

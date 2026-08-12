@@ -403,3 +403,214 @@ export function navRegion(el: HTMLElement): { destroy(): void } {
     },
   };
 }
+
+/* ── Navbar background color tracker ────────────────────────────────
+ * On scroll, determines which section is under the sticky header and
+ * publishes a CSS color string so the layout can match the navbar
+ * background to the current section. Sections register via
+ * `data-nav-bg` attributes (e.g. `data-nav-bg="#221c14"`).
+ *
+ * Colour blending: when the navbar spans the boundary between two
+ * sections, the colour is linearly interpolated so the transition
+ * feels continuous rather than a hard cut. */
+
+type NavbarColorListener = (color: string) => void;
+
+const navbarColorListeners = new Set<NavbarColorListener>();
+let lastNavbarColor = '';
+/** Hero scroll progress (0→1, eased). Set by the hero driver so
+ * the section colour tracker can decide when the WelcomePanel has
+ * arrived without duplicating the easing curve. */
+let heroProgress = 0;
+/** Locked true once the hero strip finishes (p=1). Resets at p=0.
+ * Both the layout and the section colour tracker use this to know
+ * the navbar should be solid over the WelcomePanel zone. */
+let _heroReachedEnd = false;
+
+subscribeHeroScroll((p) => {
+  heroProgress = p;
+  // Hero strip finishes at p=1 — lock solid from there so the
+  // hero photo stays fully visible until the strip completes.
+  if (p >= 1) _heroReachedEnd = true;
+  // Reset when the hero is primary again (p < 0.5).
+  if (p < 0.5) _heroReachedEnd = false;
+});
+
+/** Read-only access for the layout subscriber. */
+export function heroReachedEnd(): boolean { return _heroReachedEnd; }
+
+/** Parse a CSS color string to [r, g, b]. Supports #hex and named colors. */
+function parseColor(c: string): [number, number, number] {
+  if (c.startsWith('#')) {
+    const hex = c.slice(1);
+    if (hex.length === 3) {
+      return [
+        parseInt(hex[0] + hex[0], 16),
+        parseInt(hex[1] + hex[1], 16),
+        parseInt(hex[2] + hex[2], 16),
+      ];
+    }
+    return [
+      parseInt(hex.slice(0, 2), 16),
+      parseInt(hex.slice(2, 4), 16),
+      parseInt(hex.slice(4, 6), 16),
+    ];
+  }
+  // Named / rgb() fallback — create a temp element to resolve
+  if (typeof document !== 'undefined') {
+    const el = document.createElement('div');
+    el.style.color = c;
+    document.body.appendChild(el);
+    const computed = getComputedStyle(el).color;
+    document.body.removeChild(el);
+    const m = computed.match(/\d+/g);
+    if (m) return [+m[0], +m[1], +m[2]];
+  }
+  return [0, 0, 0];
+}
+
+function lerpColor(
+  a: [number, number, number],
+  b: [number, number, number],
+  t: number,
+): string {
+  const r = Math.round(a[0] + (b[0] - a[0]) * t);
+  const g = Math.round(a[1] + (b[1] - a[1]) * t);
+  const bl = Math.round(a[2] + (b[2] - a[2]) * t);
+  return `rgb(${r},${g},${bl})`;
+}
+
+interface NavBgSection {
+  el: HTMLElement;
+  color: [number, number, number];
+  top: number;
+  bottom: number;
+}
+
+let navBgSections: NavBgSection[] = [];
+let navBgRaf = false;
+
+function measureNavBgSections(): void {
+  navBgSections = [];
+  const els = document.querySelectorAll<HTMLElement>('[data-nav-bg]');
+  for (const el of els) {
+    const r = el.getBoundingClientRect();
+    navBgSections.push({
+      el,
+      color: parseColor(el.dataset.navBg ?? '#F1E7D4'),
+      top: r.top + window.scrollY,
+      bottom: r.bottom + window.scrollY,
+    });
+  }
+}
+
+function frameNavBg(): void {
+  navBgRaf = false;
+  if (navBgSections.length === 0) return;
+
+  const scrollY = window.scrollY;
+  // Navbar occupies 0–HEADER_H in viewport coords. Find sections
+  // that overlap this strip.
+  const navTop = scrollY;
+  const navBottom = scrollY + HEADER_H;
+
+  let color = '';
+  let heroInvolved = false;
+
+  for (let i = 0; i < navBgSections.length; i++) {
+    const s = navBgSections[i];
+    if (s.bottom <= navTop) continue; // section is above navbar
+    if (s.top >= navBottom) break; // section is below navbar
+
+    // The first section (hero scroll-container) is managed by the hero
+    // scroll handler. Mark it and skip — we never publish for it.
+    if (i === 0) { heroInvolved = true; break; }
+
+    const overlap = Math.min(s.bottom, navBottom) - Math.max(s.top, navTop);
+
+    // Check if we're at a boundary between two content sections
+    const next = navBgSections[i + 1];
+    if (
+      next &&
+      next.top < navBottom &&
+      next.top > navTop
+    ) {
+      // The navbar spans two sections — blend proportionally
+      const nextOverlap = Math.min(next.bottom, navBottom) - next.top;
+      const total = overlap + nextOverlap;
+      if (total > 0) {
+        color = lerpColor(s.color, next.color, nextOverlap / total);
+      } else {
+        color = `rgb(${s.color.join(',')})`;
+      }
+      break;
+    }
+
+    // Fully within one content section
+    color = `rgb(${s.color.join(',')})`;
+    break;
+  }
+
+  // When the hero zone overlaps the navbar, the hero scroll handler
+  // owns the background. But on the way UP, the hero handler may
+  // not re-fire (progress is clamped at 1.0), so publish the
+  // WelcomePanel colour to keep the navbar correct. The WelcomePanel
+  // The hero zone: compute raw scroll progress directly (the eased
+  // driver may skip emissions). Strip done (raw >= 1) → paper;
+  // not done → empty. The tracker is the single writer here.
+  if (heroInvolved && !color) {
+    const hs = navBgSections[0];
+    if (hs) {
+      const vh = typeof window !== 'undefined' ? window.innerHeight : 900;
+      const scrollable = Math.max(1, hs.bottom - hs.top - vh);
+      color = navTop - hs.top >= scrollable ? 'rgb(241,231,212)' : '';
+    }
+  }
+
+  if (color !== lastNavbarColor) {
+    lastNavbarColor = color;
+    for (const l of navbarColorListeners) l(color);
+  }
+}
+
+function scheduleNavBgFrame(): void {
+  if (navBgRaf) return;
+  navBgRaf = true;
+  requestAnimationFrame(frameNavBg);
+}
+
+/** Bind the navbar colour tracker to the page. Measures all
+ * `[data-nav-bg]` sections and updates on scroll/resize. Returns cleanup. */
+export function bindNavbarColor(): () => void {
+  if (typeof window === 'undefined') return () => {};
+
+  // Defer measurement so DOM is ready
+  requestAnimationFrame(() => {
+    measureNavBgSections();
+    frameNavBg();
+  });
+
+  window.addEventListener('scroll', scheduleNavBgFrame, { passive: true });
+  window.addEventListener('resize', () => {
+    measureNavBgSections();
+    scheduleNavBgFrame();
+  });
+
+  return () => {
+    window.removeEventListener('scroll', scheduleNavBgFrame);
+    window.removeEventListener('resize', measureNavBgSections);
+    navBgSections = [];
+  };
+}
+
+/** Subscribe to the navbar background colour. Fires immediately
+ * if a colour is already known. Returns the unsubscribe fn. */
+export function subscribeNavbarColor(
+  listener: NavbarColorListener,
+): () => void {
+  navbarColorListeners.add(listener);
+  if (lastNavbarColor) listener(lastNavbarColor);
+  return () => {
+    navbarColorListeners.delete(listener);
+  };
+}

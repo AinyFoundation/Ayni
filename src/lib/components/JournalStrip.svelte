@@ -19,7 +19,7 @@
   const m = $derived(t(DEFAULT_LOCALE).blog);
 </script>
 
-<section class="journal" aria-labelledby="journal-heading">
+<section class="journal" data-nav-bg="#F1E7D4" aria-labelledby="journal-heading">
   <span class="natural-accent accent-contour accent-contour-bl" aria-hidden="true"><i></i><i></i></span>
   <div class="journal-inner">
     <div class="journal-head">

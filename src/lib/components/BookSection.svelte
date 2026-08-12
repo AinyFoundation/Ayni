@@ -302,7 +302,7 @@
   {/if}
 {/snippet}
 
-<section class="book-section" id="book" aria-label={m.label}>
+<section class="book-section" id="book" data-nav-bg="#EADBC0" aria-label={m.label}>
   <div class="book-inner">
     <div class="book-shell" role="group" aria-roledescription={m.roledescription} aria-label={m.label}>
       <div class="book" style="--turn-ms: {TURN_MS}ms">

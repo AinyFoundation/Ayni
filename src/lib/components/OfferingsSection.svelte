@@ -176,7 +176,7 @@
   });
 </script>
 
-<section class="offerings" id="offerings" bind:this={containerEl}>
+<section class="offerings" id="offerings" data-nav-bg="#EADBC0" bind:this={containerEl}>
   <div class="pin">
     <div class="pin-media" use:navRegion>
       <!-- Card deck, top-down: card 0 sits on top of the stack (z-index
