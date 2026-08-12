@@ -382,6 +382,7 @@
 <style>
   .book-section {
     position: relative;
+    z-index: 0;
     /* Every entry's caption is a different length, so the card's total
      * height changes on every turn. Left to itself the browser's scroll
      * anchoring "corrects" for that by silently adjusting scrollY to keep

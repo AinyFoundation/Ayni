@@ -251,6 +251,7 @@
    * to scroll through). The container height is the tempo control. */
   .offerings {
     position: relative;
+    z-index: 0;
     /* svh, not dvh: the runway height must be stable so scroll progress
      * never recalculates mid-gesture. See +page.svelte. */
     height: 220vh;
