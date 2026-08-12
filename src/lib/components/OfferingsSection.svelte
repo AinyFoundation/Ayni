@@ -233,10 +233,13 @@
         
             <h2 class="copy-title">{copy.title}</h2>
             <p class="copy-blurb">{copy.blurb}</p>
-            <!-- CTA seam: per-offering action buttons land here later, e.g.
-                 <div class="copy-actions"><a class="btn btn-secondary" href="…">…</a></div> -->
           </article>
         {/each}
+      </div>
+
+      <!-- Static CTA — outside the animated panels so it stays visible. -->
+      <div class="copy-actions">
+        <a class="btn btn-secondary" href="#">{m.offerings.allOfferings}</a>
       </div>
     </div>
   </div>
@@ -386,6 +389,10 @@
     line-height: var(--leading-loose);
     color: var(--text-2);
     max-width: 44ch;
+  }
+
+  .copy-actions {
+    margin-top: var(--spacing-s-5);
   }
 
   /* Mobile: no pin — image on top (first category's photo), every copy

@@ -3,7 +3,6 @@
   import WelcomePanel from '$lib/components/WelcomePanel.svelte';
   import OfferingsSection from '$lib/components/OfferingsSection.svelte';
   import PatternDivider from '$lib/components/PatternDivider.svelte';
-  import RetreatsSection from '$lib/components/RetreatsSection.svelte';
   import JournalStrip from '$lib/components/JournalStrip.svelte';
   import BookSection from '$lib/components/BookSection.svelte';
   import VoicesSection from '$lib/components/VoicesSection.svelte';
@@ -220,21 +219,14 @@
      offerings scrub is the only choreography after the strip. See
      docs/research/sanctuary-offerings-landing/research.md. -->
 <OfferingsSection />
-
-<!-- The two woven seams on the page, and the only two. They bracket the
-     invitation and the journal that follows it — the ask, then its proof —
-     a seam earns its place by marking that one moment, and four of them
-     marked nothing. Everything below the second seam is the story after
-     the ask, and runs unbroken. -->
-<PatternDivider />
-<RetreatsSection />
 <hr class="rainbow-line" />
-<JournalStrip posts={data.latestPosts} />
-<PatternDivider />
 
 <!-- The close: the book of days, then what guests said, then how to reach
      us. See docs/research/sanctuary-gallery-voices-contact/research.md. -->
+<PatternDivider />
 <BookSection />
+<PatternDivider />
+<JournalStrip posts={data.latestPosts} />
 <VoicesSection reviews={data.reviews} />
 <ContactSection />
 

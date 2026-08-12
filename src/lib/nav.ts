@@ -37,7 +37,6 @@ export type NavLink = {
 export const NAV_LINKS: NavLink[] = [
   { href: '/', key: 'home' },
   { href: '/#offerings', key: 'offerings' },
-  { href: '/#retreats', key: 'retreats' },
   { href: '/#book', key: 'book', secondary: true },
   { href: '/blog', key: 'journal' },
   { href: '/#contact', key: 'visit' },

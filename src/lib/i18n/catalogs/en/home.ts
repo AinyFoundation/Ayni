@@ -84,6 +84,8 @@ const home = {
     /** `01 / 03` — the position counter beside the pinned image. */
     counter: (current: number, total: number) =>
       `${String(current).padStart(2, '0')} / ${String(total).padStart(2, '0')}`,
+    /** CTA button inside each offering panel. */
+    allOfferings: 'All offerings',
     /**
      * One entry per card in the pinned deck, IN DECK ORDER — the component
      * holds the matching photograph and wing hue at the same index.
