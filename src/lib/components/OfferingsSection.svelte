@@ -58,9 +58,9 @@
       image: {
         src: '/images/retreats.webp',
         srcset:
-          '/images/retreats-768.webp 768w, /images/retreats-1280.webp 1280w, /images/retreats.webp 5152w',
-        width: 5152,
-        height: 7728,
+          '/images/retreats-768.webp 768w, /images/retreats-1280.webp 1280w, /images/retreats.webp 1920w',
+        width: 1920,
+        height: 2880,
       },
     },
     {
