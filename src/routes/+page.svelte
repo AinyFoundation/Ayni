@@ -132,7 +132,7 @@
   jsonLd={[organization(), website()]}
 />
 
-<section class="scroll-container" data-nav-bg="#221c14" bind:this={containerEl}>
+<section class="scroll-container" bind:this={containerEl}>
   <div class="scroll-wrapper">
     <div class="panels" bind:this={panelsEl} style="transform: translateX(0vw)">
       <div class="panel panel-hero" bind:this={heroPanelEl} style="transform: scale(1); border-radius: 0px">

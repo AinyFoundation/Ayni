@@ -13,7 +13,6 @@
     HEADER_H,
     bindNavbarColor,
     subscribeNavbarColor,
-    heroReachedEnd,
     type NavRegion,
   } from '$lib/scrollDriver';
   import { blogEntry } from '$lib/blogNav.svelte';
@@ -174,8 +173,17 @@
       heroClip = `inset(${topInset}vh ${rightInset}vw 0 0 round ${radius}px)`;
       if (sectionClip === null) applyClip();
       welcomeVisible = p >= WELCOME_THRESHOLD;
-      // Navbar background is managed entirely by the section colour
-      // tracker in scrollDriver.ts — no direct writes here.
+      // In the hero zone (p < WELCOME_THRESHOLD) the navbar should be
+      // transparent. Once the WelcomePanel arrives, publish paper colour
+      // until the section colour tracker takes over.
+      if (navbarBlackEl) {
+        if (p < WELCOME_THRESHOLD) {
+          navbarBlackEl.style.background = '';
+        } else {
+          navbarBlackEl.style.background = 'rgb(241,231,212)';
+          navbarBlackEl.classList.remove('dark-bg');
+        }
+      }
     });
 
     const unsubNav = subscribeNavRegions((regions) => {
