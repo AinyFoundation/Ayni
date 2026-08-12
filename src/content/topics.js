@@ -103,6 +103,20 @@ export const TOPICS = [
       label: 'why Ayni is rooted here',
       blurb: 'The collective grew out of this valley. Here is the longer story.'
     }
+  },
+  {
+    slug: 'sanctuary-and-sacred-valley',
+    label: 'Sanctuary & Sacred Valley',
+    title: 'Sanctuary & Sacred Valley',
+    description:
+      'Inside Ayni Sanctuary in Calca: the spaces, the philosophy, and the valley that surrounds it all.',
+    intro:
+      'What Ayni is, how it sits in the valley, and why the land around it is part of the experience — from the people who built and run it.',
+    cta: {
+      href: '/sanctuary',
+      label: 'the sanctuary in Calca',
+      blurb: 'Read more about what Ayni Sanctuary offers and how to visit.'
+    }
   }
 ];
 

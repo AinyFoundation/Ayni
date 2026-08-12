@@ -11,7 +11,7 @@
  */
 
 .prose {
-  max-width: 68ch;
+  max-width: min(1040px, 100%);
   margin-inline: auto;
   font-family: var(--font-text);
   font-size: var(--text-body);

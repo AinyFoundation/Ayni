@@ -207,14 +207,14 @@
 
 <style>
   .post {
-    max-width: 1200px;
+    max-width: 1440px;
     margin-inline: auto;
     /* Tighter top padding than the token — the navbar already provides air. */
     padding: clamp(24px, 4vh, 48px) var(--page-x) var(--page-bottom);
   }
 
   .post-head {
-    max-width: 68ch;
+    max-width: min(1040px, 100%);
     margin-inline: auto;
   }
 
@@ -287,7 +287,7 @@
   }
 
   .post-cover {
-    max-width: 900px;
+    max-width: 1100px;
     margin: clamp(32px, 5vh, 56px) auto 0;
   }
 
@@ -325,7 +325,7 @@
          same axis as .post-head and .post-foot above and below it. Fixed
          gutter widths cannot do this: they force the measure to shrink to
          whatever is left, which slides the prose off the title's line. */
-      grid-template-columns: 1fr min(68ch, 100%) 1fr;
+      grid-template-columns: 1fr min(1040px, 100%) 1fr;
       align-items: start;
       gap: 0;
     }
@@ -415,7 +415,7 @@
   }
 
   .post-foot {
-    max-width: 68ch;
+    max-width: min(1040px, 100%);
     margin: clamp(48px, 8vh, 80px) auto 0;
   }
 
