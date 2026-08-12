@@ -252,7 +252,7 @@
 <style>
   .welcome {
     position: absolute; inset: 0; display: flex; overflow: hidden;
-    background: radial-gradient(130% 100% at 85% 15%, var(--clay-t) 0%, transparent 60%), var(--surface-1);
+    background: var(--surface-1);
     padding: clamp(80px, 10vh, 120px) clamp(24px, 5vw, 80px) clamp(32px, 4vh, 56px);
   }
   /* overflow: hidden contains the svg below, which is deliberately hung 6%

@@ -21,6 +21,9 @@
    * and a plain binding is not reactive in runes mode, so the parking effect
    * below would run once against `undefined` and never re-run. */
   let navbarWhiteEl: HTMLElement | undefined = $state();
+  let welcomeVisible = $state(false);
+  /** Threshold for hero progress at which the WelcomePanel has arrived. */
+  const WELCOME_THRESHOLD = 0.85;
 
   /** The hero clip only belongs to the homepage — other (site) routes keep
    * the navbar fully revealed. Match on the URL, not the route id, so route
@@ -160,6 +163,7 @@
       const radius = p * 24;
       heroClip = `inset(${topInset}vh ${rightInset}vw 0 0 round ${radius}px)`;
       if (sectionClip === null) applyClip();
+      welcomeVisible = p >= WELCOME_THRESHOLD;
     });
 
     const unsubNav = subscribeNavRegions((regions) => {
@@ -191,7 +195,7 @@
   Identical box → identical layout → pixel-perfect alignment.
 -->
 
-<header class="site-header" class:on-blog={isBlog}>
+<header class="site-header" class:on-blog={isBlog} class:on-welcome={welcomeVisible && isHome}>
   <!-- Black navbar — always visible, underneath -->
   <div class="navbar navbar-black">
     <div class="header-inner">
@@ -344,6 +348,20 @@
 
   .on-blog .navbar-white {
     /* Hidden on blog — black navbar carries the solid background */
+    clip-path: inset(0 100% 0 0) !important;
+  }
+
+  /* ── Homepage: solid background once WelcomePanel arrives ── */
+  .on-welcome .navbar-black {
+    background: var(--surface-1);
+    color: var(--text);
+  }
+
+  .on-welcome .navbar-black :global(.logo-img) {
+    filter: none;
+  }
+
+  .on-welcome .navbar-white {
     clip-path: inset(0 100% 0 0) !important;
   }
 

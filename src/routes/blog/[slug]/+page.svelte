@@ -207,7 +207,7 @@
 
 <style>
   .post {
-    max-width: 1440px;
+    max-width: 1800px;
     margin-inline: auto;
     /* Tighter top padding than the token — the navbar already provides air. */
     padding: clamp(24px, 4vh, 48px) var(--page-x) var(--page-bottom);
@@ -324,8 +324,12 @@
       /* Equal fractional gutters, so the middle column lands on exactly the
          same axis as .post-head and .post-foot above and below it. Fixed
          gutter widths cannot do this: they force the measure to shrink to
-         whatever is left, which slides the prose off the title's line. */
-      grid-template-columns: 1fr min(1040px, 100%) 1fr;
+         whatever is left, which slides the prose off the title's line.
+
+         The prose column scales with the viewport (780px minimum, 65%
+         maximum) so both it and the TOC rail grow together as the screen
+         widens. The rail never shrinks as viewport width increases. */
+      grid-template-columns: 1fr min(1040px, 65%) 1fr;
       align-items: start;
       gap: 0;
     }
