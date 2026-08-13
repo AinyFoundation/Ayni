@@ -22,6 +22,13 @@
   import { onMount } from 'svelte';
   import { bindSectionScroll, publishNavRegion, HEADER_H } from '$lib/scrollDriver';
 
+  /**
+   * overlapPx — how far the divider's top edge extends into the sticky
+   * navbar. Negative margin pulls the divider upward so its top border
+   * sits inside the navbar strip; the navbar (z-index 5) paints on top.
+   */
+  let { overlapPx = 0 }: { overlapPx?: number } = $props();
+
   /** Unique per instance — pattern ids resolve document-wide and the nav
    * region registry is keyed per claimant. `$props.id()` (not Math.random)
    * because the id is SSR-stable: the server writes it into <pattern id>
@@ -50,7 +57,7 @@
   });
 </script>
 
-<div class="pattern-divider" aria-hidden="true" bind:this={dividerEl}>
+<div class="pattern-divider" aria-hidden="true" bind:this={dividerEl} style="margin-top: {overlapPx}px">
   <svg class="pattern-track" height="32" role="presentation" focusable="false">
     <defs>
       <!-- One seamless 112×32 tile of the stepped snake (q'enqo / greca
@@ -92,7 +99,7 @@
 <style>
   .pattern-divider {
     position: relative;
-    z-index: 6;
+    z-index: 1;
     overflow: hidden;
     line-height: 0;
     border-top: 4px solid var(--color-ink);

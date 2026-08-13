@@ -223,9 +223,9 @@
 
 <!-- The close: the book of days, then what guests said, then how to reach
      us. See docs/research/sanctuary-gallery-voices-contact/research.md. -->
-<PatternDivider />
+<PatternDivider overlapPx={-30} />
 <BookSection />
-<PatternDivider />
+<PatternDivider overlapPx={-30} />
 <JournalStrip posts={data.latestPosts} />
 <VoicesSection reviews={data.reviews} />
 <ContactSection />

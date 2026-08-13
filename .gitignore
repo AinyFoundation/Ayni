@@ -23,3 +23,6 @@ __pycache__/
 
 # Large drop files (source images, screen recordings)
 .orca/drops/
+
+# Freebuff desktop workspace state (preview logs, run doc, local DB)
+/.freebuff/
