@@ -49,6 +49,28 @@ export const SOCIAL_URLS = {
   facebook: '#'
 };
 
+/**
+ * PLACEHOLDER — replace with the sanctuary's real WhatsApp number.
+ *
+ * Digits only, country code included, no `+`/spaces/dashes (the shape
+ * `wa.me` itself expects). Empty string = not configured, same convention as
+ * `CONTACT_ENDPOINT`: callers check for it and hide the action rather than
+ * link to a broken chat. An individual offering's `whatsapp` frontmatter
+ * field overrides this default; most won't need to.
+ */
+export const WHATSAPP_NUMBER = '';
+
+/**
+ * Builds a `wa.me` click-to-chat URL. Returns null when `number` is unset, so
+ * callers can render nothing rather than a dead WhatsApp button — the same
+ * resolve-or-null idiom `src/lib/blog/cta.ts` uses for CTA destinations.
+ */
+export function whatsappUrl(number: string, message?: string): string | null {
+  if (!number) return null;
+  const query = message ? `?text=${encodeURIComponent(message)}` : '';
+  return `https://wa.me/${number}${query}`;
+}
+
 /** Where the sanctuary is. Shared by the map caption and the footer so the
  * location is stated once. */
 export const LOCATION = {

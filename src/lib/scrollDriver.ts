@@ -104,6 +104,46 @@ function clamp01(value: number): number {
   return value < 0 ? 0 : value > 1 ? 1 : value;
 }
 
+/**
+ * A permanent, invisible element sized `height: 100svh` — the only way to
+ * read "the CSS `1svh` unit, in px, right now" from script, since there is
+ * no direct JS accessor for it. Every scroll-driving container in this
+ * codebase (`.scroll-container`, `.scroll-wrapper`, `.offerings`, `.pin`)
+ * is deliberately sized in `svh`, not `vh`/`dvh`, because `svh` stays fixed
+ * across a mobile browser's toolbar collapsing/expanding mid-scroll — only
+ * a genuine viewport resize changes it. `window.innerHeight` does NOT have
+ * that guarantee (it moves like `dvh`), so any geometry cached against it
+ * drifts out of sync with the CSS the moment the toolbar collapses.
+ */
+let svhProbeEl: HTMLElement | null = null;
+
+function ensureSvhProbe(): HTMLElement | null {
+  if (typeof document === 'undefined') return null;
+  if (svhProbeEl) return svhProbeEl;
+  const el = document.createElement('div');
+  el.setAttribute('aria-hidden', 'true');
+  el.style.cssText =
+    'position:fixed;top:0;left:0;width:0;height:100svh;visibility:hidden;pointer-events:none;';
+  document.body.appendChild(el);
+  svhProbeEl = el;
+  return el;
+}
+
+/**
+ * Stable viewport height, px. Use this everywhere a scroll driver needs
+ * "the viewport height" for scrollable-distance math — never
+ * `window.innerHeight` directly, which caused the navbar/hero-clip to
+ * advance early on phones (toolbar collapse shrank the computed scrollable
+ * distance for an unchanged `scrollY`, jumping progress forward). Falls
+ * back to `window.innerHeight` only before the probe has ever been laid
+ * out (e.g. a synchronous call before first paint).
+ */
+function stableViewportHeight(): number {
+  const probe = ensureSvhProbe();
+  const h = probe?.getBoundingClientRect().height ?? 0;
+  return h > 0 ? h : window.innerHeight;
+}
+
 function currentProgress(): number {
   const raw = clamp01((window.scrollY - geometry.top) / geometry.scrollable);
   return easeInOutCustom(raw);
@@ -113,7 +153,7 @@ function currentProgress(): number {
 function measure(): void {
   if (!container) return;
   geometry.top = container.getBoundingClientRect().top + window.scrollY;
-  geometry.scrollable = Math.max(1, container.offsetHeight - window.innerHeight);
+  geometry.scrollable = Math.max(1, container.offsetHeight - stableViewportHeight());
 }
 
 function emit(progress: number): void {
@@ -126,7 +166,12 @@ function frame(): void {
   if (!container) return;
   const progress = currentProgress();
   // ~0.04vw of travel — sub-pixel. Skipping keeps idle scroll events free.
-  if (Math.abs(progress - lastProgress) < 0.0004) return;
+  // Terminal values are exempt: the ease-out tail creeps toward 1 in
+  // sub-epsilon steps, so without this the exact p=1 (or p=0) emit gets
+  // swallowed — and the layout's arrival flip (WELCOME_THRESHOLD = 1)
+  // keys on precisely that value.
+  const terminal = (progress === 0 || progress === 1) && progress !== lastProgress;
+  if (!terminal && Math.abs(progress - lastProgress) < 0.0004) return;
   emit(progress);
 }
 
@@ -219,7 +264,7 @@ export function bindSectionScroll(
   const measure = (): void => {
     top = container.getBoundingClientRect().top + window.scrollY;
     height = container.offsetHeight;
-    viewportH = window.innerHeight;
+    viewportH = stableViewportHeight();
     scrollable = Math.max(1, height - viewportH);
   };
 
@@ -278,7 +323,16 @@ export function bindSectionScroll(
  * layout composes the union — it stays the only DOM writer, so sources
  * never fight over the style attribute. */
 
-/** Sticky header height, px — matches .site-header in +layout.svelte. */
+/**
+ * Sticky header height, px — matches .site-header in +layout.svelte.
+ *
+ * House convention: the navbar's BOTTOM edge, `scrollY + HEADER_H`, is the
+ * reference line for "top of page" — not `scrollY` / the bare viewport top.
+ * The navbar-color tracker below already measures section overlap against
+ * `[scrollY, scrollY + HEADER_H]` rather than `[scrollY, scrollY]`; any
+ * future section-boundary logic should do the same, since content is never
+ * actually visible above that line while the header sits on top of it.
+ */
 export const HEADER_H = 60;
 
 export interface NavRegion {
@@ -484,47 +538,75 @@ function measureNavBgSections(): void {
   }
 }
 
+/** Scroll distance (px) over which adjacent section colours cross-fade.
+ * The fade is anchored on the navbar's bottom edge (the house reference
+ * line — see HEADER_H) and centred on each boundary, so handoffs ease in
+ * and out over real scroll travel instead of cutting inside the 60px
+ * strip. Deliberately scroll-driven, NOT a CSS time transition: a time
+ * transition on the navbar fights these per-frame writes — the painted
+ * colour lags the section actually under the header, and the dark-bg
+ * text toggle desynchronises from the background it must match. */
+const NAV_BLEND_PX = 160;
+
+/** Paper — the colour the hero handler paints once the WelcomePanel has
+ * fully arrived (see +layout.svelte); the first tracked boundary blends
+ * out of it. Matches --color-paper / rgb(241,231,212). */
+const NAV_PAPER: [number, number, number] = [241, 231, 212];
+
+/** Ease for the boundary cross-fade (smoothstep: gentle in, gentle out). */
+function blendEase(t: number): number {
+  return t * t * (3 - 2 * t);
+}
+
 function frameNavBg(): void {
   navBgRaf = false;
   if (navBgSections.length === 0) return;
 
-  const scrollY = window.scrollY;
-  // Navbar occupies 0–HEADER_H in viewport coords. Find sections
-  // that overlap this strip.
-  const navTop = scrollY;
-  const navBottom = scrollY + HEADER_H;  let color = '';
+  // House convention: the navbar's BOTTOM edge (scrollY + HEADER_H) is
+  // the section reference line — content is never visible above it while
+  // the header covers it.
+  const refLine = window.scrollY + HEADER_H;
+  let color = '';
 
-  for (let i = 0; i < navBgSections.length; i++) {
-    const s = navBgSections[i];
-    if (s.bottom <= navTop) continue; // section is above navbar
-    if (s.top >= navBottom) break; // section is below navbar
-
-    const overlap = Math.min(s.bottom, navBottom) - Math.max(s.top, navTop);
-
-    // Check if we're at a boundary between two content sections
-    const next = navBgSections[i + 1];
-    if (
-      next &&
-      next.top < navBottom &&
-      next.top > navTop
-    ) {
-      // The navbar spans two sections — blend proportionally
-      const nextOverlap = Math.min(next.bottom, navBottom) - next.top;
-      const total = overlap + nextOverlap;
-      if (total > 0) {
-        color = lerpColor(s.color, next.color, nextOverlap / total);
-      } else {
-        color = `rgb(${s.color.join(',')})`;
-      }
-      break;
+  const first = navBgSections[0];
+  if (refLine < first.top) {
+    // Approaching the first tracked section: ease out of the hero
+    // handler's paper. Publish only inside the blend window, so the rest
+    // of the hero zone stays the hero handler's alone (single authority).
+    const start = first.top - NAV_BLEND_PX;
+    if (refLine >= start) {
+      const t = blendEase((refLine - start) / NAV_BLEND_PX);
+      color = lerpColor(NAV_PAPER, first.color, t);
     }
-
-    // Fully within one content section
-    color = `rgb(${s.color.join(',')})`;
-    break;
+  } else {
+    for (let i = 0; i < navBgSections.length; i++) {
+      const s = navBgSections[i];
+      const next = navBgSections[i + 1];
+      if (!next) {
+        // Last tracked section: hold its colour while the line is inside
+        // it; past its bottom, publish nothing (the last colour stands).
+        if (refLine <= s.bottom) color = `rgb(${s.color.join(',')})`;
+        break;
+      }
+      // Blend window centred between this section's end and the next's
+      // start — wide enough to swallow any gap between them (an untracked
+      // divider band) or overlap (negative pull-up margins).
+      const center = (s.bottom + next.top) / 2;
+      const half = Math.max(NAV_BLEND_PX, next.top - s.bottom) / 2;
+      if (refLine < center - half) {
+        color = `rgb(${s.color.join(',')})`;
+        break;
+      }
+      if (refLine <= center + half) {
+        const t = blendEase((refLine - (center - half)) / (2 * half));
+        color = lerpColor(s.color, next.color, t);
+        break;
+      }
+      // refLine is past this boundary — try the next pair.
+    }
   }
 
-  // Only publish when a section is found — don't clear the hero
+  // Only publish when a colour was resolved — don't clear the hero
   // handler's paper colour during the WelcomePanel zone.
   if (color && color !== lastNavbarColor) {
     lastNavbarColor = color;

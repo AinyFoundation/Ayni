@@ -185,8 +185,9 @@
   .contact {
     position: relative;
     background: var(--surface-2);
-    /* vw rather than vh — unchanged at 108px on 1440×900, 48px instead of
-     * 101px on a phone. See RetreatsSection for the reasoning. */
+    /* vw rather than vh: a phone is narrow but TALL, so vh padding spends the
+     * most space exactly where there is least. Unchanged at 108px on
+     * 1440×900, 48px instead of 101px on a phone. */
     padding: clamp(48px, 7.5vw, 120px) clamp(24px, 5vw, 80px);
     /* The footer's "Write to us" jumps here; clear the sticky 60px header. */
     scroll-margin-top: 60px;

@@ -35,10 +35,22 @@
   import { onMount } from 'svelte';
   import { bindSectionScroll, navRegion } from '$lib/scrollDriver';
   import { t, DEFAULT_LOCALE } from '$lib/i18n';
+  import FeaturedOffering from './FeaturedOffering.svelte';
+  import { featuredFor } from '$lib/offerings/featured';
+  import { isPastNow, startClock } from '$lib/offerings/clock.svelte';
+  import type { OfferingSummary } from '$lib/offerings/types';
+
+  /**
+   * Published offerings, from the homepage's server load. Empty is the normal
+   * state until the first one is written, and an empty category renders no
+   * card at all rather than a placeholder.
+   */
+  let { offerings: published = [] }: { offerings?: OfferingSummary[] } = $props();
 
   /* $derived, not a plain const: the locale is a property of the URL and
    * becomes dynamic in Phase 3, at which point this recomputes on its own. */
   const m = $derived(t(DEFAULT_LOCALE).home);
+  const mo = $derived(t(DEFAULT_LOCALE).offerings);
 
   /**
    * The deck, structure only: photograph, wing hue, and a slug.
@@ -88,6 +100,20 @@
     },
   ];
 
+  /**
+   * The one offering each category leads with, in deck order — soonest
+   * upcoming, else most recent past, else null for a category with none.
+   *
+   * `$derived`, and reading `isPastNow`, is what makes the badge honest: the
+   * helper returns the build-time answer until `startClock()` runs in
+   * onMount, then the reader's own date — so this recomputes on the frame
+   * after hydration and a finished offering flips from "Next" to "Last"
+   * without anyone redeploying the site.
+   */
+  const featured = $derived(
+    offerings.map((entry) => featuredFor(published, entry.slug, isPastNow))
+  );
+
   let containerEl: HTMLElement;
   let activeIndex = $state(0);
 
@@ -113,6 +139,12 @@
   const EXIT_SPAN = 0.5;
 
   onMount(() => {
+    /* Hand the site its clock. Idempotent — the offerings index calls this
+     * too, and whichever mounts first wins. Until it runs, every "is this
+     * past?" answer is the build-time one the server already rendered, so
+     * hydration matches and this is a correction, not a flash. */
+    startClock();
+
     // The sweep transform lands on .pin-card — its filter: drop-shadow()
     // rides along automatically since it's part of the same layer.
     const cards = Array.from(
@@ -230,16 +262,41 @@
             class:is-before={k < activeIndex}
             aria-hidden={k !== activeIndex}
           >
-        
+
             <h2 class="copy-title">{copy.title}</h2>
             <p class="copy-blurb">{copy.blurb}</p>
+
+            <!-- The category's next offering, or its most recent past one.
+                 Nothing at all when the category has none — no skeleton, no
+                 "coming soon"; an empty category should read as deliberate.
+                 Every category is in that state until the first offering is
+                 published. -->
+            {#if featured[k]}
+              <div class="copy-featured">
+                <!-- Hue comes from the offering's own category record, not
+                     from this component's deck array: the registry is the one
+                     place a category's colour is decided, so the card here and
+                     the cards on /offerings cannot drift. -->
+                <FeaturedOffering featured={featured[k]} hue={featured[k].offering.categoryHue} />
+              </div>
+            {/if}
           </article>
         {/each}
       </div>
 
-      <!-- Static CTA — outside the animated panels so it stays visible. -->
+      <!-- CTA — deliberately OUTSIDE the animated panels, so the swap never
+           reflows it, but its destination and words follow the active
+           category: the scroller doubles as the index's filter. The index
+           reads `?category=` on hydration.
+
+           One accepted caveat: `/offerings?category=x` is served by the same
+           prerendered file as `/offerings`, so the unfiltered list paints for
+           a frame before the filter applies — exactly how `/blog?topic=`
+           already behaves. -->
       <div class="copy-actions">
-        <a class="btn btn-secondary" href="#">{m.offerings.allOfferings}</a>
+        <a class="btn btn-secondary" href="/offerings?category={offerings[activeIndex].slug}">
+          {mo.allInCategory(m.offerings.categories[activeIndex].title)}
+        </a>
       </div>
     </div>
   </div>
@@ -264,10 +321,16 @@
   .pin {
     position: sticky;
     top: 60px;
-    height: 100vh;
+    /* Viewport MINUS the 60px header the pin sits below: at a full 100svh
+     * the pin spanned 60px→(60px + viewport), pushing its bottom 60px —
+     * and the progress band that lives on the image's bottom edge — below
+     * the fold. The pinned area is the region between the navbar's bottom
+     * edge (the house "top of page" line, see HEADER_H in scrollDriver)
+     * and the viewport bottom. */
+    height: calc(100vh - 60px);
     /* svh, not dvh: stable minimum viewport height — no layout jump when the
      * mobile toolbar shows/hides. See +page.svelte .scroll-wrapper. */
-    height: 100svh;
+    height: calc(100svh - 60px);
     display: grid;
     grid-template-columns: 1fr 1fr;
     overflow: hidden;
@@ -392,6 +455,10 @@
     max-width: 44ch;
   }
 
+  .copy-featured {
+    margin-top: var(--spacing-s-6);
+  }
+
   .copy-actions {
     margin-top: var(--spacing-s-5);
   }
@@ -418,18 +485,51 @@
    * three-line description plus its tag and title inside the
    * remaining 54vh, on the shortest phone viewport worth targeting. */
   @media (max-width: 900px) {
+    /* `minmax(0, 1fr)`, never a bare `1fr`: a plain `1fr` track is
+     * min-content floored, so when the copy needs more than its share it
+     * GROWS the row instead of being constrained by it — and the band then
+     * runs past the pin's bottom edge and off the viewport. Measured doing
+     * exactly that here (494px of copy in a 396px row) the moment the
+     * featured card landed. Same lesson WelcomePanel learned; see HANDOFF.
+     *
+     * 43svh for the photograph rather than 46: the copy band now carries a
+     * card it did not before, and the picture is the thing that can yield a
+     * few points without losing its job. */
     .pin {
       grid-template-columns: 1fr;
-      grid-template-rows: 46svh 1fr;
+      grid-template-rows: 43svh minmax(0, 1fr);
     }
 
     .pin-copy {
-      padding: var(--spacing-s-6) clamp(20px, 6vw, 40px);
+      padding: var(--spacing-s-5) clamp(20px, 6vw, 40px);
       justify-content: flex-start;
     }
 
+    /* Three lines is enough to set up the category on a phone; the whole
+     * blurb ran to five and spent the room the card needs. Desktop keeps it
+     * in full, where there is height to spare. */
+    .copy-blurb {
+      display: -webkit-box;
+      display: box;
+      -webkit-line-clamp: 3;
+      line-clamp: 3;
+      -webkit-box-orient: vertical;
+      box-orient: vertical;
+      overflow: hidden;
+    }
+
     .copy-stack {
-      margin-top: var(--spacing-s-5);
+      margin-top: var(--spacing-s-4);
+    }
+
+    /* Tighter than desktop's s-6: the copy band is the whole height budget on
+     * a phone, and this is the gap most easily given back. */
+    .copy-featured {
+      margin-top: var(--spacing-s-4);
+    }
+
+    .copy-actions {
+      margin-top: var(--spacing-s-4);
     }
 
     /* The band sits on the seam between photograph and copy, where it
@@ -441,9 +541,35 @@
 
   /* Short viewports (landscape phones) cannot give 46vh to a photograph
    * and still show the copy, so the image yields first. */
+  /* Short phones. The copy band carries a fixed cost now — title, card and
+   * CTA are all load-bearing — so the two things that can yield are the
+   * photograph's share and the blurb's line count. Both do, in two steps,
+   * measured at 360×640 and 320×568 rather than guessed. */
+  @media (max-width: 900px) and (max-height: 700px) {
+    .pin {
+      grid-template-rows: 34svh minmax(0, 1fr);
+    }
+
+    .copy-blurb {
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+    }
+
+    .copy-stack,
+    .copy-featured,
+    .copy-actions {
+      margin-top: var(--spacing-s-3);
+    }
+  }
+
   @media (max-width: 900px) and (max-height: 620px) {
     .pin {
-      grid-template-rows: 38svh 1fr;
+      grid-template-rows: 28svh minmax(0, 1fr);
+    }
+
+    .pin-copy {
+      padding-top: var(--spacing-s-4);
+      padding-bottom: var(--spacing-s-4);
     }
   }
 </style>

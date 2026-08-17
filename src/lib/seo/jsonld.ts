@@ -12,6 +12,8 @@
 import { AUTHOR_BY_KEY } from '../../content/authors.js';
 import { TOPIC_BY_SLUG } from '../../content/topics.js';
 import type { PostSummary } from '$lib/blog/types';
+import type { OfferingSummary } from '$lib/offerings/types';
+import { LOCATION } from '$lib/config';
 import { SITE, absolute } from './site';
 
 type JsonLd = Record<string, unknown>;
@@ -105,18 +107,119 @@ export function blog(posts: PostSummary[]): JsonLd {
   };
 }
 
-/** Ordered list of posts, for an index or a pillar page. */
-export function itemList(posts: PostSummary[], name: string): JsonLd {
+/**
+ * Ordered list of anything with a title and a site-relative href — posts on
+ * an index or a pillar page, offerings on the offerings index.
+ *
+ * Typed structurally rather than as `PostSummary[]` so both content types
+ * feed it without a second near-identical builder; `PostSummary` and
+ * `OfferingSummary` both satisfy it.
+ */
+export function itemList(items: Array<{ href: string; title: string }>, name: string): JsonLd {
   return {
     '@type': 'ItemList',
     name,
-    numberOfItems: posts.length,
-    itemListElement: posts.map((post, index) => ({
+    numberOfItems: items.length,
+    itemListElement: items.map((item, index) => ({
       '@type': 'ListItem',
       position: index + 1,
-      url: absolute(post.href),
-      name: post.title
+      url: absolute(item.href),
+      name: item.title
     }))
+  };
+}
+
+/**
+ * Currency symbols the price parser recognises, mapped to ISO 4217 codes.
+ *
+ * `price` in offering frontmatter is a DISPLAY string ("S/. 350", "$120",
+ * "Free") because that is what a reader should see on the card. Schema.org's
+ * `offers.price` wants a bare number beside a `priceCurrency` code, so the
+ * two only reconcile when the display string can be read confidently.
+ */
+const CURRENCY_SYMBOLS: Array<[RegExp, string]> = [
+  [/^s\/\.?/i, 'PEN'],
+  [/^\$/, 'USD'],
+  [/^€/, 'EUR'],
+  [/^£/, 'GBP']
+];
+
+/**
+ * Reads a display price into the numeric pair schema.org needs.
+ *
+ * @returns null when the string carries no recognisable currency + amount —
+ *          "Free", "By donation", "Sliding scale" all land here. Callers then
+ *          omit `offers` entirely rather than emit an invalid or invented
+ *          node: a malformed required property suppresses the rich result
+ *          for the whole page, so shipping nothing is strictly better than
+ *          shipping a guess.
+ */
+function parsePrice(price: string): { price: string; priceCurrency: string } | null {
+  const trimmed = price.trim();
+  for (const [symbol, code] of CURRENCY_SYMBOLS) {
+    if (!symbol.test(trimmed)) continue;
+    const amount = trimmed.replace(symbol, '').replace(/[\s,]/g, '');
+    if (!/^\d+(\.\d+)?$/.test(amount)) return null;
+    return { price: amount, priceCurrency: code };
+  }
+  return null;
+}
+
+/**
+ * An offering as a schema.org Event.
+ *
+ * Required by Google: `name`, `startDate`, `location`. Everything else here
+ * is recommended rather than required, and is emitted because pages carrying
+ * only the three required fields get materially less prominence in the Events
+ * rich result. See `docs/research/offerings-system/research.md` § Sources.
+ *
+ * `eventStatus` is always `EventScheduled` — a cancelled or rescheduled
+ * offering is currently handled by editing or unpublishing the file, not by a
+ * status field. If the collective ever needs to announce a cancellation
+ * rather than silently remove it, that becomes a frontmatter field and this
+ * line reads it.
+ */
+export function event(offering: OfferingSummary, imageUrl: string): JsonLd {
+  const offers = offering.price ? parsePrice(offering.price) : null;
+
+  return {
+    '@type': 'Event',
+    '@id': `${absolute(offering.href)}#event`,
+    name: offering.title,
+    description: offering.description,
+    image: imageUrl,
+    startDate: offering.dateStart,
+    ...(offering.dateEnd ? { endDate: offering.dateEnd } : {}),
+    eventStatus: 'https://schema.org/EventScheduled',
+    eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+    inLanguage: SITE.locale,
+    location: {
+      '@type': 'Place',
+      name: offering.location ?? `${LOCATION.town}, ${LOCATION.region}`,
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: LOCATION.town,
+        addressRegion: 'Cusco',
+        addressCountry: 'PE'
+      },
+      geo: {
+        '@type': 'GeoCoordinates',
+        latitude: LOCATION.lat,
+        longitude: LOCATION.lon
+      }
+    },
+    organizer: { '@id': `${SITE.origin}/#organization` },
+    ...(offers
+      ? {
+          offers: {
+            '@type': 'Offer',
+            ...offers,
+            availability: 'https://schema.org/InStock',
+            url: absolute(offering.href)
+          }
+        }
+      : {}),
+    mainEntityOfPage: { '@type': 'WebPage', '@id': absolute(offering.href) }
   };
 }
 

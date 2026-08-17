@@ -100,9 +100,18 @@
     border-color var(--duration-normal) var(--ease);
 }
 
+/* The hairline darkens, nothing else.
+ *
+ * This used to also `translateY(-2px)`. That predates the standing "no drop
+ * shadows, hairlines only" direction, under which a card that lifts is
+ * announcing a shadow it does not draw — and every card actually shipped
+ * (JournalCard, and now OfferingCard) had independently declined to use this
+ * class partly for that reason. Corrected rather than deprecated: the class
+ * had zero consumers when this was written, so nothing could regress, and
+ * leaving a global that contradicts the shipped convention is how the next
+ * component ends up hand-rolling a third copy. */
 .card:hover {
-  transform: translateY(-2px);
-  border-color: var(--border-strong);
+  border-color: var(--color-ink-2);
 }
 
 /* Nested cards invert again */

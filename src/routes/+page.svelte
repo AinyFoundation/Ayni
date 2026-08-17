@@ -8,9 +8,11 @@
   import VoicesSection from '$lib/components/VoicesSection.svelte';
   import ContactSection from '$lib/components/ContactSection.svelte';
   import ScrollDebug from '$lib/components/ScrollDebug.svelte';
+  import IconLink from '$lib/components/IconLink.svelte';
   import Seo from '$lib/seo/Seo.svelte';
   import { organization, website } from '$lib/seo/jsonld';
   import { bindHeroScroll, subscribeHeroScroll } from '$lib/scrollDriver';
+  import { bindImageWarming } from '$lib/imageWarm';
   import { t, DEFAULT_LOCALE } from '$lib/i18n';
   /* Geometry shared with SiteFooter — see $lib/social for why it is not
    * inline here any more. */
@@ -91,6 +93,14 @@
       /* A rejected decode() is harmless — the browser still renders the image. */
     });
 
+    /* Every lazy photograph below the fold, fetched AND decoded a viewport
+     * before it is needed. Bound here rather than section by section because
+     * one query after mount finds them all, and a section added later gets
+     * this without being wired for it. The decode is the point: lazy loading
+     * already starts the fetch early-ish, but leaves the decode to land on
+     * the frame that paints — which is the frame that came out blank. */
+    const unwarm = bindImageWarming();
+
     const unbind = bindHeroScroll(containerEl);
     const unsubscribe = subscribeHeroScroll((p) => {
       // Subscribers other than the strip still need the progress signal (the
@@ -121,6 +131,7 @@
     return () => {
       unbind();
       unsubscribe();
+      unwarm();
     };
   });
 </script>
@@ -179,23 +190,7 @@
         -->
         <div class="social-icons">
           {#each SOCIAL_MARKS as mark}
-            <a href={mark.href} class="social-link" aria-label={social[mark.key]}>
-              <!-- Stroke settings live on the <svg>, so each mark's path data
-                   stays pure geometry and every glyph is guaranteed the same
-                   weight. -->
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.7"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-                focusable="false"
-              >
-                {@html mark.path}
-              </svg>
-            </a>
+            <IconLink href={mark.href} label={social[mark.key]} path={mark.path} class="social-link" />
           {/each}
         </div>
       </div>
@@ -218,7 +213,7 @@
      (retreats plus journal). Retreats and Journal are static; the pinned
      offerings scrub is the only choreography after the strip. See
      docs/research/sanctuary-offerings-landing/research.md. -->
-<OfferingsSection />
+<OfferingsSection offerings={data.offerings} />
 <hr class="rainbow-line" />
 
 <!-- The close: the book of days, then what guests said, then how to reach
@@ -453,7 +448,11 @@
     z-index: 1;
   }
 
-  .social-link {
+  /* `:global`, scoped under `.social-icons`: the anchor is rendered by
+   * IconLink, so Svelte's per-component scoping hash is the CHILD's and a
+   * plain `.social-link` here matches nothing. Nesting it under a class this
+   * component does own keeps the escape hatch from leaking site-wide. */
+  .social-icons :global(.social-link) {
     color: var(--color-paper);
     text-decoration: none;
     display: flex;
@@ -462,11 +461,11 @@
     transition: opacity var(--duration-quick) var(--ease);
   }
 
-  .social-link:hover {
+  .social-icons :global(.social-link:hover) {
     opacity: 0.85;
   }
 
-  .social-link svg {
+  .social-icons :global(.social-link svg) {
     /* Back up to the size they were before being redrawn — 30px read as
      * cramped against the hero's scale. */
     width: 34px;
@@ -479,7 +478,7 @@
    * the 44px floor, on three links sitting side by side in a corner where a
    * miss lands on the neighbour. The mark stays 30px; only its box grows. */
   @media (pointer: coarse) {
-    .social-link {
+    .social-icons :global(.social-link) {
       min-width: 44px;
       min-height: 44px;
     }

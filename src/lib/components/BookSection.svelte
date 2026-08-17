@@ -28,6 +28,7 @@
    */
   import { onDestroy } from 'svelte';
   import { navRegion } from '$lib/scrollDriver';
+  import { warmImages, onApproach, type WarmSource } from '$lib/imageWarm';
   import { t, DEFAULT_LOCALE } from '$lib/i18n';
 
   /* $derived, not a plain const: the locale is a property of the URL and
@@ -117,8 +118,21 @@
     },
   ];
 
-  /** Kept in sync with the keyframe duration in the stylesheet below. */
+  /** Published to CSS as `--turn-ms`, so the stylesheet's transition and the
+   * setTimeout that lands the turn read the same number by construction. */
   const TURN_MS = 620;
+  /**
+   * The turn under reduced motion. Not zero, and not skipped: a page turn
+   * here is user-initiated — someone clicked a control or a page — so it
+   * belongs to the same exception the hero strip already claims (see the
+   * long comment in +page.svelte, and animations.css's own header). What
+   * reduced motion buys is brevity, not absence: same arc, less of it.
+   */
+  const TURN_MS_REDUCED = 250;
+
+  /** Whichever of the two the current visitor gets. Read at click time
+   * rather than at mount, so toggling the OS setting mid-session lands. */
+  let turnMs = $state(TURN_MS);
 
   const count = entries.length;
   /** Wrapping index — the book has no first or last page, only a loop. */
@@ -139,6 +153,48 @@
    * rather than merely queued.
    */
   let settling = $state(false);
+
+  /**
+   * The plate's `sizes`, as a constant because it is now used twice: on the
+   * `<img>` below, and to warm the same photograph ahead of time. The two
+   * MUST agree — the browser picks a srcset candidate from `sizes`, so a
+   * warm-up with a different one fetches a file the page never asks for and
+   * the flicker survives, invisibly, with the network cost doubled.
+   */
+  const PLATE_SIZES = '(max-width: 900px) 92vw, 46vw';
+
+  const warmSource = (e: Entry): WarmSource => ({
+    src: e.srcset.split(' ')[0],
+    srcset: e.srcset,
+    sizes: PLATE_SIZES,
+  });
+
+  /** Flipped once the section is within a viewport. Until then the book asks
+   * for nothing — whatever is loading above it has the better claim. */
+  let nearby = $state(false);
+
+  function warmWhenNear(node: HTMLElement) {
+    return { destroy: onApproach(node, () => (nearby = true)) };
+  }
+
+  /**
+   * Keep the spreads either side of this one fetched AND decoded.
+   *
+   * Only the current spread is ever in the DOM, so a turn mounts an `<img>`
+   * for a photograph the browser has never been asked about — the first byte
+   * is requested on the very frame that has to show it. That is the reported
+   * flicker: the plate blanks, then visibly resolves. No `loading="lazy"`
+   * threshold reaches this, because there is no element to observe until it
+   * is already too late.
+   *
+   * Neighbours rather than the whole array, and re-run on every turn, so this
+   * still holds when `entries` stops being six placeholders (see the SEAM
+   * note at the top) and both directions stay covered.
+   */
+  $effect(() => {
+    if (!nearby) return;
+    warmImages([at(index - 1), at(index), at(index + 1)].map(warmSource));
+  });
 
   type Face = { kind: 'image' | 'text'; entry: Entry; i: number };
 
@@ -214,14 +270,28 @@
   /**
    * The 3D turn is spent on desktop only. Below the spread breakpoint there is
    * no facing page to turn toward — the layout is a single column — so turning
-   * a leaf would animate a fiction. Reduced motion opts out for the usual
-   * reason, honouring the ?motion=1 dev override the rest of the site uses.
+   * a leaf would animate a fiction.
+   *
+   * Reduced motion deliberately does NOT gate here any more. It used to, and
+   * the result was a section that looked broken on any machine with the OS
+   * accessibility setting on — pages swapped instantly, in every browser on
+   * that machine, while the same site turned pages normally on the machine
+   * next to it. Reduced motion now shortens the turn instead; see
+   * `turnDuration()` and the re-assert in the stylesheet.
    */
   function canTurn() {
     if (typeof window === 'undefined') return false;
-    if (document.documentElement.classList.contains('motion-forced')) return true;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
     return window.matchMedia('(min-width: 901px)').matches;
+  }
+
+  /** How long this turn should take, honouring the ?motion=1 dev override
+   * the rest of the site uses. Kept a function, not a $derived: matchMedia
+   * is a live read and nothing here needs to react to it between clicks. */
+  function turnDuration(): number {
+    if (document.documentElement.classList.contains('motion-forced')) return TURN_MS;
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      ? TURN_MS_REDUCED
+      : TURN_MS;
   }
 
   function go(dir: 'next' | 'prev') {
@@ -232,19 +302,22 @@
       requestAnimationFrame(() => requestAnimationFrame(() => { settling = false; }));
       return;
     }
+    // Before `turning`, so the leaf mounts under the right --turn-ms.
+    turnMs = turnDuration();
     turning = dir;
     /* Outlasts the transition deliberately. The rotation only starts once two
      * frames have painted (see the $effect above `leaf`), so it finishes a
-     * hair after TURN_MS; unmounting the leaf at exactly TURN_MS used to chop
-     * the last few degrees off the turn. The extra margin lets it land fully
-     * flat — which is invisible anyway, because by then the leaf shows the
-     * same page `base` is about to swap in — and guarantees the swap never
-     * happens mid-flight. */
+     * hair after `turnMs`; unmounting the leaf at exactly `turnMs` used to
+     * chop the last few degrees off the turn. The extra margin lets it land
+     * fully flat — which is invisible anyway, because by then the leaf shows
+     * the same page `base` is about to swap in — and guarantees the swap
+     * never happens mid-flight. */
+    const ms = turnMs;
     timer = setTimeout(() => {
       index = wrap(index + (dir === 'next' ? 1 : -1));
       turning = null;
       timer = null;
-    }, TURN_MS + 80);
+    }, ms + 80);
   }
 
   /**
@@ -282,7 +355,7 @@
         use:navRegion
         src={f.entry.srcset.split(' ')[0]}
         srcset={f.entry.srcset}
-        sizes="(max-width: 900px) 92vw, 46vw"
+        sizes={PLATE_SIZES}
         width={f.entry.width}
         height={f.entry.height}
         alt={m.entries[f.i].alt}
@@ -302,10 +375,16 @@
   {/if}
 {/snippet}
 
-<section class="book-section" id="book" data-nav-bg="#EADBC0" aria-label={m.label}>
+<section
+  class="book-section"
+  id="book"
+  data-nav-bg="#EADBC0"
+  aria-label={m.label}
+  use:warmWhenNear
+>
   <div class="book-inner">
     <div class="book-shell" role="group" aria-roledescription={m.roledescription} aria-label={m.label}>
-      <div class="book" style="--turn-ms: {TURN_MS}ms">
+      <div class="book" style="--turn-ms: {turnMs}ms">
         <div class="spread">
           <!-- Pointer-only affordance, deliberately not a button: the real,
                keyboard-reachable controls are below, and giving this div its
@@ -400,7 +479,7 @@
     /* vw, not vh: the band's air should answer to how wide the column is, not
      * to how tall the phone holding it is. Same 108px on the 1440×900
      * reference, same 120px cap, but 48px instead of 101px on a 390×844
-     * screen — see RetreatsSection for the full reasoning. */
+     * screen. */
     padding: clamp(48px, 7.5vw, 120px) clamp(24px, 5vw, 80px);
     /* Cleared for the sticky header when the nav jumps to /#book. */
     scroll-margin-top: 60px;
@@ -613,6 +692,28 @@
     transform-style: preserve-3d;
     transition: transform var(--turn-ms) cubic-bezier(0.4, 0, 0.2, 1);
     will-change: transform;
+  }
+
+  /* Reduced motion must not zero this one.
+   *
+   * animations.css blanket-applies `transition-duration: 0s !important` under
+   * (prefers-reduced-motion: reduce). For decorative motion that is exactly
+   * right. For this leaf it is not: the turn is user-initiated — a click on a
+   * control or on a page — and zeroing it snapped the leaf through 180° in a
+   * single frame, which read as the section simply having no animation at all
+   * on any machine with the OS setting on, in every browser on that machine.
+   *
+   * Same exception the hero strip already claims in +page.svelte, for the
+   * same reason: nothing moves here that the reader did not move themselves.
+   * `--turn-ms` is already the shortened 250ms by the time this applies —
+   * go() sets it from turnDuration() before the leaf mounts — so honouring
+   * the preference happens in the duration, not in the presence of the turn.
+   * !important is required only because the blanket rule uses it too. */
+  @media (prefers-reduced-motion: reduce) {
+    :global(html:not(.motion-forced)) .leaf {
+      transition-duration: var(--turn-ms) !important;
+      transition-delay: 0s !important;
+    }
   }
 
   .leaf-next {

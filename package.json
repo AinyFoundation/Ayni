@@ -11,6 +11,7 @@
     "preview": "vite preview",
     "blog:images": "node scripts/blog-images.mjs",
     "blog:check": "node scripts/blog-check.mjs",
+    "offerings:check": "node scripts/offerings-check.mjs",
     "i18n:check": "node scripts/i18n-check.mjs",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",

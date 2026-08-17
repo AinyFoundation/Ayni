@@ -155,9 +155,9 @@
     position: relative;
     overflow: hidden;
     background: var(--surface-1);
-    /* vw rather than vh — unchanged at 108px on 1440×900, 48px instead of
-     * 101px on a phone. See RetreatsSection for why height was the wrong
-     * axis to measure a band's air against. */
+    /* vw rather than vh: height is the wrong axis to measure a band's air
+     * against, because a phone is narrow but tall. Unchanged at 108px on
+     * 1440×900, 48px instead of 101px on a phone. */
     padding: clamp(48px, 7.5vw, 120px) clamp(24px, 5vw, 80px);
   }
 

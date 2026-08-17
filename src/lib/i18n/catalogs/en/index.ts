@@ -4,9 +4,9 @@
  *
  * Domains are split by SURFACE, not by component: a string used by both the
  * homepage strip and the blog index belongs to `blog`, wherever it renders.
- * Three files is deliberate. The reference implementation this is modelled on
- * split eleven ways for an app several times this size; splitting further
- * before a file actually hurts is cost without benefit.
+ * A file per surface is deliberate. The reference implementation this is
+ * modelled on split eleven ways for an app several times this size; splitting
+ * further before a file actually hurts is cost without benefit.
  *
  * There is no `seo` domain. A page's `<title>` and description are that
  * page's words, so they live with the rest of its copy — `home.seo` and
@@ -20,8 +20,9 @@
 import chrome from './chrome';
 import home from './home';
 import blog from './blog';
+import offerings from './offerings';
 import error from './error';
 
-const en = { chrome, home, blog, error };
+const en = { chrome, home, blog, offerings, error };
 
 export default en;
