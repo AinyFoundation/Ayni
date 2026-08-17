@@ -1,6 +1,14 @@
-# Error pages
+---
+owns:
+  - src/routes/+error.svelte
+slug: error-pages
+status: reference
+created: 2026-08-09
+last-updated: 2026-08-09
+sources: 5
+---
 
-> status: reference · 2026-08-09
+# Error pages
 
 The site has no error pages today. Three things happen as a result: a
 broken post slug (the only place SvelteKit throws `404` — see

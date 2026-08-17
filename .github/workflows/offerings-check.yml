@@ -1,0 +1,46 @@
+name: offerings-check
+
+# Offering contract: required fields, a registered category, a real WhatsApp
+# number shape, and a cover photograph that exists at every size the card
+# requests. Separate from blog-check.yml because the two validate different
+# content with different rules and neither should fail on the other's edits;
+# separate from oss-gate.yml for the reason stated there — that workflow is a
+# pure shell gate with no language assumption, and this one needs node.
+
+on:
+  pull_request:
+    paths:
+      - 'src/content/offerings/**'
+      - 'src/content/offeringCategories.js'
+      - 'src/lib/offerings/schema.js'
+      - 'static/images/offerings/**'
+      - 'scripts/offerings-check.mjs'
+      - '.github/workflows/offerings-check.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'src/content/offerings/**'
+      - 'src/content/offeringCategories.js'
+      - 'src/lib/offerings/schema.js'
+      - 'static/images/offerings/**'
+      - 'scripts/offerings-check.mjs'
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Check offerings
+        run: npm run offerings:check

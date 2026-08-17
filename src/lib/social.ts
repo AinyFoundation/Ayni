@@ -27,21 +27,27 @@ export type SocialMark = {
   path: string;
 };
 
-export const SOCIAL_MARKS: SocialMark[] = [
-  {
-    key: 'instagram',
-    href: SOCIAL_URLS.instagram,
-    path: `<rect x="2.75" y="2.75" width="18.5" height="18.5" rx="5.5" />
+/**
+ * The geometry itself, keyed by mark.
+ *
+ * Split out from `SOCIAL_MARKS` so a surface that needs one of these glyphs
+ * WITHOUT its social-profile href can reach the drawing directly — the
+ * offerings action row links Instagram beside WhatsApp and a map pin, which
+ * is a different list with different hrefs but must not become a second,
+ * free-to-diverge copy of the same "f" and camera. One drawing, two lists.
+ */
+export const MARK_PATHS = {
+  instagram: `<rect x="2.75" y="2.75" width="18.5" height="18.5" rx="5.5" />
            <circle cx="12" cy="12" r="4.6" />
-           <circle cx="17.3" cy="6.7" r="1.15" fill="currentColor" stroke="none" />`
-  },
-  {
-    key: 'facebook',
-    /* A real "f": stem, shoulder, crossbar. An earlier attempt drew the
-     * shoulder as a detached tick and read as a stray mark, not a letter. */
-    href: SOCIAL_URLS.facebook,
-    path: `<rect x="2.75" y="2.75" width="18.5" height="18.5" rx="5.5" />
+           <circle cx="17.3" cy="6.7" r="1.15" fill="currentColor" stroke="none" />`,
+  /* A real "f": stem, shoulder, crossbar. An earlier attempt drew the
+   * shoulder as a detached tick and read as a stray mark, not a letter. */
+  facebook: `<rect x="2.75" y="2.75" width="18.5" height="18.5" rx="5.5" />
            <path d="M14.4 21.25V10.6a2.6 2.6 0 0 1 2.6-2.6h1.35" />
            <path d="M10.9 13.6h6.2" />`
-  }
+} as const;
+
+export const SOCIAL_MARKS: SocialMark[] = [
+  { key: 'instagram', href: SOCIAL_URLS.instagram, path: MARK_PATHS.instagram },
+  { key: 'facebook', href: SOCIAL_URLS.facebook, path: MARK_PATHS.facebook }
 ];

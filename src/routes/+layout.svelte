@@ -25,8 +25,12 @@
   let navbarWhiteEl: HTMLElement | undefined = $state();
   let navbarBlackEl: HTMLElement | undefined = $state();
   let welcomeVisible = $state(false);
-  /** Threshold for hero progress at which the WelcomePanel has arrived. */
-  const WELCOME_THRESHOLD = 0.85;
+  /** Threshold for hero progress at which the WelcomePanel has arrived —
+   * 1 (not a fraction) on purpose: the navbar only goes solid once the
+   * second section is fully in view. The scroll driver guarantees the
+   * terminal p=1 emit (its epsilon skip exempts terminal values), so
+   * comparing against exactly 1 is safe. */
+  const WELCOME_THRESHOLD = 1;
 
   /** The hero clip only belongs to the homepage — other (site) routes keep
    * the navbar fully revealed. Match on the URL, not the route id, so route
@@ -173,9 +177,10 @@
       heroClip = `inset(${topInset}vh ${rightInset}vw 0 0 round ${radius}px)`;
       if (sectionClip === null) applyClip();
       welcomeVisible = p >= WELCOME_THRESHOLD;
-      // In the hero zone (p < WELCOME_THRESHOLD) the navbar should be
-      // transparent. Once the WelcomePanel arrives, publish paper colour
-      // until the section colour tracker takes over.
+      // In the hero zone (p < WELCOME_THRESHOLD) the navbar is transparent.
+      // Once the WelcomePanel has FULLY arrived (p === 1), publish paper
+      // colour until the section colour tracker takes over. A hard cut on
+      // purpose — this boundary is a discrete arrival, not a spatial blend.
       if (navbarBlackEl) {
         if (p < WELCOME_THRESHOLD) {
           navbarBlackEl.style.background = '';
@@ -359,6 +364,11 @@
   .navbar-black {
     z-index: 0;
     color: #000;
+    /* No time-based background/colour transition here, on purpose. The
+     * section colour tracker writes a scroll-anchored cross-fade per frame
+     * (NAV_BLEND_PX in scrollDriver.ts) — layering a CSS transition on top
+     * makes the painted colour lag the section actually under the header
+     * and desynchronises the dark-bg text toggle from its background. */
   }
 
   .navbar-black :global(.logo-img) {

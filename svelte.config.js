@@ -11,13 +11,17 @@ import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
  *
  * Remove entries as the routes land. `blog-check.mjs` enforces the same
  * rule for blog CTA destinations, which must never ship a 404.
+ *
+ * `/community` and `/stay` came off this list in the offerings pass: nothing
+ * linked to `/community` at all any more, and `/stay`'s only referrer was
+ * `RetreatsSection.svelte`, which was orphaned and has been deleted. An
+ * allowlist entry with no referrer is not harmless — it silently permits a
+ * dead link the day someone adds one back.
  */
 const PLANNED_ROUTES = new Set([
   '/wings',
   '/about',
-  '/community',
-  '/sanctuary',
-  '/stay'
+  '/sanctuary'
 ]);
 
 /** @type {import('@sveltejs/kit').Config} */
@@ -32,17 +36,21 @@ const config = {
     }),
     prerender: {
       /**
-       * A blog with no posts yet is a normal state, not a build failure:
-       * /blog/[slug] has nothing to enumerate until the first file lands in
-       * src/content/blog. Any OTHER unseen prerenderable route is still a
-       * real problem and still reported.
+       * A blog with no posts, or an offerings list with nothing scheduled,
+       * are both normal states rather than build failures: neither
+       * /blog/[slug] nor /offerings/[slug] has anything to enumerate until
+       * the first file lands in its content folder. Any OTHER unseen
+       * prerenderable route is still a real problem and still reported.
        */
       handleUnseenRoutes: ({ routes }) => {
-        const unexpected = routes.filter((route) => route !== '/blog/[slug]');
+        const empty = new Set(['/blog/[slug]', '/offerings/[slug]']);
+        const unexpected = routes.filter((route) => !empty.has(route));
         if (unexpected.length > 0) {
           throw new Error(`Prerenderable routes never crawled: ${unexpected.join(', ')}`);
         }
-        console.warn('[prerender] no blog posts yet — /blog/[slug] has nothing to build');
+        for (const route of routes) {
+          console.warn(`[prerender] nothing to build yet for ${route}`);
+        }
       },
       handleHttpError: ({ path, referrer, message }) => {
         const route = path.split('#')[0];

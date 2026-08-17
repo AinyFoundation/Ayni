@@ -29,6 +29,27 @@ jobs:
           pass=0
           fail=0
 
+          # Defined here, before Check 0, and not further down beside the
+          # checks it serves. bash resolves a function only once its
+          # definition has been executed, so with the definition below the
+          # first call the very first check died with `check: command not
+          # found` and `-e` aborted the job at exit 127 — for pass and fail
+          # alike. The gate reported nothing and failed every run from the
+          # repository's first commit onward, which reads exactly like a
+          # real gate failure and is why it went unnoticed.
+          check() {
+            local name="$1"
+            local result="$2"   # "ok" or "fail"
+            local detail="$3"
+            if [ "$result" = "ok" ]; then
+              echo "✓ $name"
+              pass=$((pass + 1))
+            else
+              echo "✗ $name — $detail"
+              fail=$((fail + 1))
+            fi
+          }
+
           # Check 0: Each research document in docs/research/<slug>/ has valid YAML frontmatter with `owns:`
           # (self-maintaining docs — registry is auto-built from frontmatter)
           registry_ok=1
@@ -59,19 +80,6 @@ jobs:
           else
             check "Research frontmatter valid" "fail" "$registry_detail"
           fi
-
-          check() {
-            local name="$1"
-            local result="$2"   # "ok" or "fail"
-            local detail="$3"
-            if [ "$result" = "ok" ]; then
-              echo "✓ $name"
-              pass=$((pass + 1))
-            else
-              echo "✗ $name — $detail"
-              fail=$((fail + 1))
-            fi
-          }
 
           # Check 1: README.md exists, non-empty, contains a `##` heading.
           if [ -s "$root/README.md" ] && grep -qE '^## ' "$root/README.md"; then

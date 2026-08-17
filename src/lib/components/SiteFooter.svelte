@@ -39,6 +39,7 @@
   import { DEFAULT_LOCALE, t } from '$lib/i18n';
   /* Geometry shared with the hero corner — see $lib/social. */
   import { SOCIAL_MARKS } from '$lib/social';
+  import IconLink from './IconLink.svelte';
 
   /* Derived, not a plain const: the locale is a property of the URL, so once
    * Phase 3 reads it from `page` this line follows the navigation instead of
@@ -220,23 +221,7 @@
 
         <div class="footer-social">
           {#each SOCIAL_MARKS as mark}
-            <a href={mark.href} class="social-chip" aria-label={social[mark.key]}>
-              <!-- Stroke settings live on the <svg> so the shared path data
-                   stays pure geometry; `currentColor` is what lets the chip
-                   flip the glyph to clay on hover with no second drawing. -->
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.7"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-                focusable="false"
-              >
-                {@html mark.path}
-              </svg>
-            </a>
+            <IconLink href={mark.href} label={social[mark.key]} path={mark.path} class="social-chip" />
           {/each}
         </div>
       </div>
@@ -428,7 +413,11 @@
     gap: var(--spacing-s-2);
   }
 
-  .social-chip {
+  /* `:global`, scoped under `.footer-social`: the anchor is rendered by
+   * IconLink, so Svelte's per-component scoping hash is the CHILD's and a
+   * plain `.social-chip` here matches nothing. Nesting it under a class this
+   * component does own keeps the escape hatch from leaking site-wide. */
+  .footer-social :global(.social-chip) {
     /* 44×44 is the touch floor, and these sit side by side in a corner where
      * a miss lands on the neighbour. The glyph stays 24px; only its box is
      * the target. */
@@ -446,18 +435,18 @@
 
   /* Same "lit" move as the doorways: the chip fills with paper and the glyph
    * — drawn in currentColor — falls back to the ground. No opacity. */
-  .social-chip:hover,
-  .social-chip:focus-visible {
+  .footer-social :global(.social-chip:hover),
+  .footer-social :global(.social-chip:focus-visible) {
     background: var(--footer-ink);
     color: var(--footer-bg);
   }
 
-  .social-chip:focus-visible {
+  .footer-social :global(.social-chip:focus-visible) {
     outline: 2px solid var(--footer-ink);
     outline-offset: 2px;
   }
 
-  .social-chip svg {
+  .footer-social :global(.social-chip svg) {
     width: 24px;
     height: 24px;
     display: block;
