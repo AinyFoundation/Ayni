@@ -1,4 +1,10 @@
 ---
+owns:
+  - .agents/skills/scrape-google-reviews/**
+  - scripts/scrape-reviews.mjs
+  - src/lib/data/reviews.json
+  - src/lib/components/VoicesSection.svelte
+  - src/lib/components/ReviewPopup.svelte
 slug: google-maps-reviews-scraper
 status: draft
 created: 2026-08-07

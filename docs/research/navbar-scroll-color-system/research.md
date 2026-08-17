@@ -1,4 +1,7 @@
 ---
+owns:
+  - src/lib/scrollDriver.ts
+  - src/routes/+layout.svelte
 slug: navbar-scroll-color-system
 status: draft
 created: 2026-08-15

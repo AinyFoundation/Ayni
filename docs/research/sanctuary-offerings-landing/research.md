@@ -1,4 +1,9 @@
 ---
+owns:
+  # The homepage section only. The /offerings routes and the offering
+  # content model this document anticipated are owned by
+  # docs/research/offerings-system/research.md, which supersedes it there.
+  - src/lib/components/OfferingsSection.svelte
 slug: sanctuary-offerings-landing
 status: draft
 created: 2026-07-31
